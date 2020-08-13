@@ -2,6 +2,7 @@
 
 #include "json.hpp"
 #include <string>
+#include <fstream>
 #include <iomanip>
 
 //TODO remove indent
@@ -10,12 +11,39 @@ namespace codepi{
 
 class ConfiguratorJson{
 public:
+
+    // to
+    nlohmann::json to_json(){
+        nlohmann::json j;
+        //TODO
+        return j;
+    }
     std::string to_string(int indent=0){
         return to_json().dump(indent);
     }
-    nlohmann::json to_json(){
+    void to_stream(std::ostream& os, int indent=0){
+        os << to_json();  //TODO: indent
+    }
+    void to_file(const std::string& fname, int indent=0){
+        std::ofstream ofs(fname);
+        to_stream(ofs ,indent);
+    }
+
+    // from
+    void from_json(const nlohmann::json& j){
+        //TODO
+    }
+    void from_string(const std::string& str) {
+        from_json(nlohmann::json::parse(str));
+    }
+    void from_file(const std::string& fname) {
+        std::ifstream ifs(fname);
+        from_stream(ifs);
+    }
+    void from_stream(std::istream& is) {
         nlohmann::json j;
-        return j;
+        is >> j;
+        from_json(j);
     }
 
 protected:
@@ -28,8 +56,6 @@ protected:
                                  std::istream* streamIn, std::ostream* streamOut, int indent,
                                  ConfiguratorJson* other)=0;
 
-    /// return i*2 spaces, for printing
-    static std::string cfgIndentBy(int i);
     /// returns default value of type T
     template <typename T> static T cfgGetDefaultVal(const T&var){return T();}
     /// overridable method called on parse error

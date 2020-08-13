@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../ConfiguratorJson.h"
+#include "../ConfiguratorJson/ConfiguratorJson.h"
 
 using namespace std;
 using namespace codepi;
