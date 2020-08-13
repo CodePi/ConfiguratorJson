@@ -15,7 +15,7 @@ public:
     // to
     nlohmann::json to_json(){
         nlohmann::json j;
-        //TODO
+        cfgMultiFunction(CFGJS_WRITE_ALL, NULL, NULL, NULL, &j, NULL);
         return j;
     }
     std::string to_string(int indent=0){
@@ -53,7 +53,7 @@ protected:
     ///   This method is automatically generated in subclass using macros below
     ///   Returns the number of variables matched
     virtual int cfgMultiFunction(MFType mfType, std::string* str, std::string* subVar,
-                                 std::istream* streamIn, std::ostream* streamOut,
+                                 nlohmann::json* jsonIn, nlohmann::json* jsonOut,
                                  ConfiguratorJson* other)=0;
 
     /// returns default value of type T
@@ -65,20 +65,17 @@ protected:
     /// the enable_if is required to prevent it from matching on Configurator descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgSetFromStream(std::istream& ss,  T& val, const std::string& subVar=""){
-        if(!subVar.empty()) { //subVar should be empty
-            ss.setstate(std::ios::failbit); //set fail bit to trigger error handling
-            return;
-        }
-        ss>>std::setbase(0)>>val;
+    cfgSetFromJson(nlohmann::json& js,  T& val, const std::string& subVar=""){
+        if(!subVar.empty()) throw std::runtime_error("!subVar.empty()");
+        val = js;
     }
 
     /// cfgWriteToStreamHelper for all other types
     /// the enable_if is required to prevent it from matching on Configurator descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgWriteToStreamHelper(std::ostream& stream, T& val){
-        stream<<val;
+    cfgWriteToJsonHelper(nlohmann::json& js, T& val){
+        js = val;
     }
 
     /// cfgCompareHelper for any type with defined operator==
@@ -99,7 +96,7 @@ protected:
   structName() { cfgMultiFunction(CFGJS_INIT_ALL,NULL,NULL,NULL,NULL,NULL); } \
   std::string getStructName() { return #structName; } \
   int cfgMultiFunction(MFType mfType, std::string* str, std::string* subVar, \
-    std::istream* streamIn, std::ostream* streamOut,ConfiguratorJson*other){ \
+    nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
     int retVal=0; \
     structName* otherPtr; \
     if(mfType==CFGJS_COMPARE) {otherPtr = dynamic_cast<structName*>(other); \
@@ -109,14 +106,12 @@ protected:
 #define CFGJS_ENTRY2(varName, defaultVal) \
   if(mfType==CFGJS_INIT_ALL) { \
     /*TODOif(cfgIsSetOrNotOptional(varName))*/ {varName = defaultVal;retVal++;} \
-    } else if(mfType==CFGJS_SET && #varName==*str) { cfgSetFromStream(*streamIn,varName,*subVar);retVal++;} \
+    } else if(mfType==CFGJS_SET && #varName==*str) { cfgSetFromJson(*jsonIn,varName,*subVar);retVal++;} \
   else if(mfType==CFGJS_WRITE_ALL) { \
     /*TODOif(cfgIsSetOrNotOptional(varName))*/ { \
-      *streamOut<<#varName<<"="; \
-      cfgWriteToStreamHelper(*streamOut,varName); \
-      *streamOut<<std::endl;retVal++; \
-      if(streamOut->fail()) \
-        throwError("ConfiguratorJson ("+getStructName()+") error, can't write variable: "+#varName); \
+      nlohmann::json jsonTmp;                    \
+      cfgWriteToJsonHelper(jsonTmp,varName);    \
+      *jsonOut = {#varName, jsonTmp}; retVal++; \
     } \
   } else if(mfType==CFGJS_COMPARE) { \
     retVal+=cfgCompareHelper(this->varName,otherPtr->varName); \
