@@ -53,7 +53,7 @@ protected:
     ///   This method is automatically generated in subclass using macros below
     ///   Returns the number of variables matched
     virtual int cfgMultiFunction(MFType mfType, std::string* str, std::string* subVar,
-                                 std::istream* streamIn, std::ostream* streamOut, int indent,
+                                 std::istream* streamIn, std::ostream* streamOut,
                                  ConfiguratorJson* other)=0;
 
     /// returns default value of type T
@@ -77,7 +77,7 @@ protected:
     /// the enable_if is required to prevent it from matching on Configurator descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgWriteToStreamHelper(std::ostream& stream, T& val, int indent){
+    cfgWriteToStreamHelper(std::ostream& stream, T& val){
         stream<<val;
     }
 
@@ -96,10 +96,10 @@ protected:
 
 // automatically generates subclass constructor and begins cfgMultiFunction method
 #define CFGJS_HEADER(structName) \
-  structName() { cfgMultiFunction(CFGJS_INIT_ALL,NULL,NULL,NULL,NULL,0,NULL); } \
+  structName() { cfgMultiFunction(CFGJS_INIT_ALL,NULL,NULL,NULL,NULL,NULL); } \
   std::string getStructName() { return #structName; } \
   int cfgMultiFunction(MFType mfType, std::string* str, std::string* subVar, \
-    std::istream* streamIn, std::ostream* streamOut,int indent,ConfiguratorJson*other){ \
+    std::istream* streamIn, std::ostream* streamOut,ConfiguratorJson*other){ \
     int retVal=0; \
     structName* otherPtr; \
     if(mfType==CFGJS_COMPARE) {otherPtr = dynamic_cast<structName*>(other); \
@@ -112,8 +112,8 @@ protected:
     } else if(mfType==CFGJS_SET && #varName==*str) { cfgSetFromStream(*streamIn,varName,*subVar);retVal++;} \
   else if(mfType==CFGJS_WRITE_ALL) { \
     /*TODOif(cfgIsSetOrNotOptional(varName))*/ { \
-      *streamOut<</*TODOcfgIndentBy(indent)<<*/#varName<<"="; \
-      cfgWriteToStreamHelper(*streamOut,varName,indent); \
+      *streamOut<<#varName<<"="; \
+      cfgWriteToStreamHelper(*streamOut,varName); \
       *streamOut<<std::endl;retVal++; \
       if(streamOut->fail()) \
         throwError("ConfiguratorJson ("+getStructName()+") error, can't write variable: "+#varName); \
@@ -128,7 +128,7 @@ protected:
 // calls cfgMultiFunction method of parent
 // allows for inheritance
 #define CFGJS_PARENT(parentName) \
-  int rc=parentName::cfgMultiFunction(mfType,str,subVar,streamIn,streamOut,indent,other); \
+  int rc=parentName::cfgMultiFunction(mfType,str,subVar,streamIn,streamOut,other); \
   retVal+=rc;
 
 
