@@ -98,4 +98,7 @@ int main() {
     tc2.from_string(str);
     cout << tc2.to_string() << "\n";
     assert(tc==tc2);
+
+    vector<uint8_t> bson = tc2.to_bson();
+    cout << bson.size() << "\n";
 }

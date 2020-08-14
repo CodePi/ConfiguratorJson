@@ -49,6 +49,9 @@ public:
         if(!ofs) throw std::runtime_error("ConfiguratorJson::to_file: file could not be opened: "+fname);
         to_stream(ofs, indent);
     }
+    std::vector<uint8_t> to_bson() {
+        return nlohmann::json::to_bson(to_json());
+    }
 
     // deserialize from json
     void from_json(nlohmann::json& js){
@@ -69,6 +72,10 @@ public:
         std::ifstream ifs(fname);
         if(!ifs) throw std::runtime_error("ConfiguratorJson::from_file: file could not be opened: "+fname);
         from_stream(ifs);
+    }
+    void from_bson(const std::vector<uint8_t>& bson) {
+        nlohmann::json js = nlohmann::json::from_bson(bson);
+        from_json(js);
     }
 
     // comparison
