@@ -27,9 +27,6 @@
 #include <iomanip>
 #include "Optional.h"
 
-//TODO:
-// add support for containers of objects (vector, array, set, map).
-
 namespace codepi{
 
 class ConfiguratorJson{
