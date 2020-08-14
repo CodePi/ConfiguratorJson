@@ -10,13 +10,13 @@ struct Config1 : public ConfiguratorJson {
   vector<int> exampleVector;
   map<string, int> exampleMap;
 
-  CFG_HEADER(Config1)
-  CFG_ENTRY2(exampleIntValue, 12)
-  CFG_ENTRY1(exampleFloat)
-  CFG_ENTRY2(exampleString, "initial value")
-  CFG_ENTRY1(exampleVector)
-  CFG_ENTRY1(exampleMap)
-  CFG_TAIL
+  CFGJS_HEADER(Config1)
+  CFGJS_ENTRY2(exampleIntValue, 12)
+  CFGJS_ENTRY1(exampleFloat)
+  CFGJS_ENTRY2(exampleString, "initial value")
+  CFGJS_ENTRY1(exampleVector)
+  CFGJS_ENTRY1(exampleMap)
+  CFGJS_TAIL
 };
 
 struct Config2 : public ConfiguratorJson {
