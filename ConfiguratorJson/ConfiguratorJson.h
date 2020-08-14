@@ -69,7 +69,7 @@ public:
     }
 
 protected:
-    enum MFType{CFGJS_INIT_ALL,CFGJS_SET,CFGJS_WRITE_ALL,CFGJS_COMPARE};
+    enum MFType{CFGJS_INIT_ALL,CFGJS_SET,CFGJS_WRITE_ALL};
 
     /// Helper method that is called by all of the public methods above.
     ///   This method is automatically generated in subclass using macros below
@@ -127,9 +127,7 @@ protected:
   int cfgMultiFunction(MFType mfType, const std::string* str, \
     nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
     int retVal=0; \
-    structName* otherPtr; \
-    if(mfType==CFGJS_COMPARE) {otherPtr = dynamic_cast<structName*>(other); \
-      if(!otherPtr) return 1; /*dynamic cast failed, types different*/ }
+    structName* otherPtr;
 
 // continues cfgMultiFunction method, called for each member variable in struct 
 #define CFGJS_ENTRY2(varName, defaultVal) \
@@ -142,9 +140,7 @@ protected:
       cfgWriteToJsonHelper(jsonTmp,varName);    \
       (*jsonOut)[#varName] = jsonTmp; retVal++; \
     } \
-  } /*else if(mfType==CFGJS_COMPARE) { \
-    retVal+=cfgCompareHelper(this->varName,otherPtr->varName); \
-  }*/
+  }
 
 // alternative to CFGJS_ENTRY2 used when default defaultVal is sufficient
 #define CFGJS_ENTRY1(varName) CFGJS_ENTRY2(varName, cfgGetDefaultVal(varName))
