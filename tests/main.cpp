@@ -37,6 +37,8 @@ struct TestConfig : public codepi::ConfiguratorJson{
     SubConfig1 u;
     std::vector<SubConfig1> subvec;
     std::array<SubConfig1, 10> subarr;
+    std::set<SubConfig1> subset;
+    std::map<string, SubConfig1> submap;
     std::vector<std::string> strList;
     bool b;
     codepi::Optional<int> opt1, opt2, opt3;
@@ -56,6 +58,8 @@ struct TestConfig : public codepi::ConfiguratorJson{
     CFGJS_ENTRY1(u)
     CFGJS_ENTRY1(subvec)
     CFGJS_ENTRY1(subarr)
+    CFGJS_ENTRY1(subset)
+    //CFGJS_ENTRY1(submap)
     CFGJS_ENTRY1(strList)
     CFGJS_ENTRY1(b)
     CFGJS_ENTRY1(opt1)

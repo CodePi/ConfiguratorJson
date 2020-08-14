@@ -77,6 +77,7 @@ public:
     // comparison
     bool operator==(ConfiguratorJson& other) { return this->to_json()==other.to_json();}
     bool operator!=(ConfiguratorJson& other) { return this->to_json()!=other.to_json();}
+    bool operator<(const ConfiguratorJson& other) const { return remove_const(*this).to_json()<remove_const(other).to_json();}
 
     virtual std::string getStructName()=0;
 
@@ -119,6 +120,9 @@ protected:
 
     template <typename T, size_t N>
     static void cfgSetFromJson(nlohmann::json& js, std::array<T, N>& val) { cfgContainerSetFromJson(js, val); }
+
+    template <typename T>
+    static void cfgSetFromJson(nlohmann::json& js, std::set<T>& val) { cfgContainerSetFromJson(js, val); }
 
     template <typename Container>
     static void cfgContainerSetFromJson(nlohmann::json& js, Container& container) {
@@ -165,12 +169,15 @@ protected:
     template <typename T, size_t N>
     static void cfgWriteToJsonHelper(nlohmann::json& js, std::array<T, N>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
+    template <typename T>
+    static void cfgWriteToJsonHelper(nlohmann::json& js, std::set<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
+
     template <typename Container>
     static void cfgContainerWriteToJsonHelper(nlohmann::json& js, Container& container) {
         js = {};
         for(auto& val : container) {
             nlohmann::json j;
-            cfgWriteToJsonHelper(j, val);
+            cfgWriteToJsonHelper(j, remove_const(val));
             js.push_back(move(j));
         }
     }
@@ -222,6 +229,13 @@ protected:
     static void insert_helper(Container& container, size_t i, T& val){
         assert(container.size()==i);
         container.insert(container.end(),val);
+    }
+
+    /// helper function for cfgSetFromStream for pairs
+    /// workaround: a map's value_type is pair<const T1, T2> this casts off the const
+    template <typename T>
+    static T& remove_const(const T& val){
+        return const_cast<T&>(val);
     }
 };
 
