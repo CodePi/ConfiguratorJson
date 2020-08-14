@@ -38,8 +38,8 @@ struct TestConfig : public codepi::ConfiguratorJson{
     std::vector<std::string> strList;
     SubConfig1 u;
     bool b;
-    //codepi::Optional<int> opt1, opt2, opt3;
-    //codepi::Optional< std::vector<int> > optvec;
+    codepi::Optional<int> opt1, opt2, opt3;
+    codepi::Optional< std::vector<int> > optvec;
     SubConfig2 sc2;
 
     CFGJS_HEADER(TestConfig)
@@ -56,10 +56,10 @@ struct TestConfig : public codepi::ConfiguratorJson{
     CFGJS_ENTRY1(strList)
     CFGJS_ENTRY1(u)
     CFGJS_ENTRY1(b)
-    //CFGJS_ENTRY1(opt1)
-    //CFGJS_ENTRY1(opt2)
-    //CFGJS_ENTRY1(opt3)
-    //CFGJS_ENTRY1(optvec)
+    CFGJS_ENTRY1(opt1)
+    CFGJS_ENTRY1(opt2)
+    CFGJS_ENTRY1(opt3)
+    CFGJS_ENTRY1(optvec)
     CFGJS_ENTRY1(sc2);
     CFGJS_TAIL
 };
@@ -79,6 +79,8 @@ int main() {
     tc.s.k = 7;
     tc.strList = {"a","b","c"};
     tc.b = true;
+    tc.opt2 = 2;
+    tc.optvec = {1,2,3,4,5};
     string str = tc.to_string();
     cout << str << "\n";
 

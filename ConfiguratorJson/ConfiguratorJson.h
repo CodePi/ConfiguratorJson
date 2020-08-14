@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <iomanip>
+#include "Optional.h"
 
 //TODO: add support for containers of objects
 //TODO: add support for optional
@@ -90,16 +91,31 @@ protected:
         cfg.from_json(js);
     }
 
+    /// cfgSetFromStream for Optional<T>
+    template <typename T>
+    static void cfgSetFromJson(nlohmann::json& js, Optional<T>& val){
+        cfgSetFromJson(js, (T&)val);
+    }
+
     /// cfgSetFromStream for all other types
     /// the enable_if is required to prevent it from matching on Configurator descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgSetFromJson(nlohmann::json& js,  T& val){
+    cfgSetFromJson(nlohmann::json& js, T& val){
         val = js.get<T>();
     }
 
     void cfgWriteToJsonHelper(nlohmann::json& js, ConfiguratorJson& val){
         js = val.to_json();
+    }
+
+    /// cfgWriteToStreamHelper for Optional<T>
+    /// Prints contents of Optional.
+    template <typename T>
+    static void cfgWriteToJsonHelper(nlohmann::json& js, Optional<T>& opt){
+        // shouldn't be able to get this far if not set
+        if(!opt.isSet()) throw std::runtime_error("cfgWriteToStreamHelper Optional<T>: this shouldn't happen");
+        cfgWriteToJsonHelper(js, (T&)opt);
     }
 
     /// cfgWriteToStreamHelper for all other types
@@ -116,6 +132,19 @@ protected:
         if(a==std::string::npos) return ""; //all white spaces
         return in.substr(a,b-a+1); //get rid of leading or trailing spaces
     }
+
+    /// returns true if optional type and value is set
+    template<typename T>
+    static bool cfgIsSetOrNotOptional(Optional<T>& opt){
+        return opt.isSet();
+    }
+
+    /// returns true if not instance of Optional<T>
+    template<typename T>
+    static bool cfgIsSetOrNotOptional(T& t){
+        return true;
+    }
+
 };
 
 
@@ -135,10 +164,10 @@ protected:
 // continues cfgMultiFunction method, called for each member variable in struct 
 #define CFGJS_ENTRY2(varName, defaultVal) \
   if(mfType==CFGJS_INIT_ALL) { \
-    /*TODOif(cfgIsSetOrNotOptional(varName))*/ {varName = defaultVal;retVal++;} \
+    if(cfgIsSetOrNotOptional(varName)) {varName = defaultVal;retVal++;} \
     } else if(mfType==CFGJS_SET && #varName==*str) { cfgSetFromJson(*jsonIn,varName);retVal++;} \
   else if(mfType==CFGJS_WRITE_ALL) { \
-    /*TODOif(cfgIsSetOrNotOptional(varName))*/ { \
+    if(cfgIsSetOrNotOptional(varName)) { \
       nlohmann::json jsonTmp;                    \
       cfgWriteToJsonHelper(jsonTmp,varName);    \
       (*jsonOut)[#varName] = jsonTmp; retVal++; \
