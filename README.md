@@ -47,14 +47,16 @@ int main(){
 
 #### Corresponding serialization
 ```
-exampleSub={
-  exampleIntValue=1
-  exampleFloat=0
-  exampleString=a string
-  exampleVector=[1,2,3]
-  exampleMap=[]
+{
+  "exampleSub":{
+    "exampleIntValue":1,
+    "exampleFloat":0,
+    "exampleString":"a string",
+    "exampleVector":[1,2,3],
+    "exampleMap":{}
+  },
+  "anotherInt":2
 }
-anotherInt=2
 ```
 
 #### Useful ConfiguratorJson methods
