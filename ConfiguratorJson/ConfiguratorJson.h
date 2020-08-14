@@ -18,20 +18,20 @@ public:
         cfgMultiFunction(CFGJS_WRITE_ALL, NULL, NULL, NULL, &j, NULL);
         return j;
     }
-    std::string to_string(int indent=0){
+    std::string to_string(int indent=-1){
         return to_json().dump(indent);
     }
-    void to_stream(std::ostream& os, int indent=0){
-        os << to_json();  //TODO: indent
+    void to_stream(std::ostream& os, int indent=-1){
+        os << std::setw(indent) << to_json();
     }
-    void to_file(const std::string& fname, int indent=0){
+    void to_file(const std::string& fname, int indent=-1){
         std::ofstream ofs(fname);
         to_stream(ofs ,indent);
     }
 
     // from
     void from_json(const nlohmann::json& j){
-        //TODO
+        cfgMultiFunction(CFGJS_SET, NULL, NULL, &j, NULL, NULL);
     }
     void from_string(const std::string& str) {
         from_json(nlohmann::json::parse(str));
@@ -53,7 +53,7 @@ protected:
     ///   This method is automatically generated in subclass using macros below
     ///   Returns the number of variables matched
     virtual int cfgMultiFunction(MFType mfType, std::string* str, std::string* subVar,
-                                 nlohmann::json* jsonIn, nlohmann::json* jsonOut,
+                                 const nlohmann::json* jsonIn, nlohmann::json* jsonOut,
                                  ConfiguratorJson* other)=0;
 
     /// returns default value of type T
@@ -65,9 +65,9 @@ protected:
     /// the enable_if is required to prevent it from matching on Configurator descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgSetFromJson(nlohmann::json& js,  T& val, const std::string& subVar=""){
+    cfgSetFromJson(const nlohmann::json& js,  T& val, const std::string& subVar=""){
         if(!subVar.empty()) throw std::runtime_error("!subVar.empty()");
-        val = js;
+        //TODOval = js;
     }
 
     /// cfgWriteToStreamHelper for all other types
@@ -96,7 +96,7 @@ protected:
   structName() { cfgMultiFunction(CFGJS_INIT_ALL,NULL,NULL,NULL,NULL,NULL); } \
   std::string getStructName() { return #structName; } \
   int cfgMultiFunction(MFType mfType, std::string* str, std::string* subVar, \
-    nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
+    const nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
     int retVal=0; \
     structName* otherPtr; \
     if(mfType==CFGJS_COMPARE) {otherPtr = dynamic_cast<structName*>(other); \
@@ -111,7 +111,7 @@ protected:
     /*TODOif(cfgIsSetOrNotOptional(varName))*/ { \
       nlohmann::json jsonTmp;                    \
       cfgWriteToJsonHelper(jsonTmp,varName);    \
-      *jsonOut = {#varName, jsonTmp}; retVal++; \
+      (*jsonOut)[#varName] = jsonTmp; retVal++; \
     } \
   } else if(mfType==CFGJS_COMPARE) { \
     retVal+=cfgCompareHelper(this->varName,otherPtr->varName); \
