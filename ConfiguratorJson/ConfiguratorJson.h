@@ -7,7 +7,6 @@
 #include "Optional.h"
 
 //TODO: add support for containers of objects
-//TODO: add support for optional
 
 namespace codepi{
 
