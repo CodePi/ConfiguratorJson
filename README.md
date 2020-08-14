@@ -23,10 +23,10 @@ struct Config2 : public ConfiguratorJson {
   Config1 exampleSub;
   int anotherInt;
 
-  CFG_HEADER(Config2)
-  CFG_ENTRY1(exampleSub)
-  CFG_ENTRY1(anotherInt)
-  CFG_TAIL
+  CFGJS_HEADER(Config2)
+  CFGJS_ENTRY1(exampleSub)
+  CFGJS_ENTRY1(anotherInt)
+  CFGJS_TAIL
 };
 
 int main(){
