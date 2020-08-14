@@ -133,15 +133,16 @@ protected:
 
     /// cfgSetFromJson for map
     template <typename T1, typename T2>
-    static void cfgSetFromJson(nlohmann::json& js, std::map<T1, T2>& val) {
-        val.clear();
-        for(auto it = js.begin(); it != js.end(); ++it) {
-            std::pair<T1, T2> pair;
-            pair.first = it.key();
-            cfgSetFromJson(it.value(), pair.second);
-            val.insert(pair);
-        }
+    static void cfgSetFromJson(nlohmann::json& js, std::map<T1, T2>& val) { cfgContainerSetFromJson(js, val); }
+
+    /// cfgSetFromJson for pair
+    template <typename T1, typename T2>
+    static void cfgSetFromJson(nlohmann::json& js, std::pair<T1, T2>& val) {
+        assert(js.size()==2);
+        cfgSetFromJson(js.at(0), remove_const(val.first));
+        cfgSetFromJson(js.at(1), val.second);
     }
+
 
     /// cfgContainerSetFromJson helper function for other containers
     template <typename Container>
@@ -199,12 +200,16 @@ protected:
 
     /// cfgWriteToJsonHelper for map
     template <typename T1, typename T2>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, std::map<T1, T2>& val) {
-        for(auto& pair : val) {
-            nlohmann::json jval;
-            cfgWriteToJsonHelper(jval, pair.second);
-            js[pair.first] = std::move(jval);
-        }
+    static void cfgWriteToJsonHelper(nlohmann::json& js, std::map<T1, T2>& val) { cfgContainerWriteToJsonHelper(js, val); }
+
+    /// cfgWriteToJsonHelper for pair
+    template <typename T1, typename T2>
+    static void cfgWriteToJsonHelper(nlohmann::json& js, std::pair<T1, T2>& val) {
+        nlohmann::json jkey;
+        nlohmann::json jval;
+        cfgWriteToJsonHelper(jkey, val.first);
+        cfgWriteToJsonHelper(jval, val.second);
+        js = {std::move(jkey), std::move(jval)};
     }
 
     /// cfgContainerWriteToJsonHelper for other containers
