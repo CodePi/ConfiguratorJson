@@ -59,7 +59,7 @@ struct TestConfig : public codepi::ConfiguratorJson{
     CFGJS_ENTRY1(subvec)
     CFGJS_ENTRY1(subarr)
     CFGJS_ENTRY1(subset)
-    //CFGJS_ENTRY1(submap)
+    CFGJS_ENTRY1(submap)
     CFGJS_ENTRY1(strList)
     CFGJS_ENTRY1(b)
     CFGJS_ENTRY1(opt1)
@@ -78,14 +78,16 @@ int main() {
     tc.intSet = {3,1,4,1,5,9};
     tc.pair = {1,"hello"};
     tc.pair2 = {"goodbye", 7};
-    tc.map = {{"a",123}};
+    tc.map = {{"a",123}, {"b", 456}};
     tc.n = "foo";
     tc.s.i = 5;
     tc.s.j = 6;
     tc.s.k = 7;
     tc.subvec = {tc.s, tc.u};
-    tc.strList = {"a","b","c"};
     tc.subarr.fill(tc.s);
+    tc.subset = {tc.s, tc.u};
+    tc.submap = {{"a", tc.s}, {"b", tc.u}};
+    tc.strList = {"a","b","c"};
     tc.b = true;
     tc.opt2 = 2;
     tc.optvec = {1,2,3,4,5};
