@@ -35,7 +35,7 @@ public:
     // serialize to json
     nlohmann::json to_json(){
         nlohmann::json j;
-        cfgMultiFunction(CFGJS_WRITE_ALL, NULL, NULL, &j, NULL);
+        cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &j, nullptr);
         return j;
     }
     std::string to_string(int indent=-1){
@@ -47,13 +47,13 @@ public:
     void to_file(const std::string& fname, int indent=-1){
         std::ofstream ofs(fname);
         if(!ofs) throw std::runtime_error("ConfiguratorJson::to_file: file could not be opened: "+fname);
-        to_stream(ofs ,indent);
+        to_stream(ofs, indent);
     }
 
     // deserialize from json
     void from_json(nlohmann::json& js){
         for(auto& kv : js.items()){
-            cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), NULL, NULL);
+            cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr, nullptr);
         }
     }
     void from_string(const std::string& str) {
@@ -91,7 +91,7 @@ protected:
     /// returns default value of type T
     template <typename T> static T cfgGetDefaultVal(const T&var){return T();}
     /// overridable method called on parse error
-    virtual void throwError(std::string error){ throw std::runtime_error(error); }
+    virtual void throwError(const std::string& error){ throw std::runtime_error(error); }
 
 
     //////////////////////////////////////////////////////////////////
@@ -112,15 +112,19 @@ protected:
         cfgSetFromJson(js, (T&)val);
     }
 
+    /// cfgSetFromJson for vector
     template <typename T>
     static void cfgSetFromJson(nlohmann::json& js, std::vector<T>& val) { cfgContainerSetFromJson(js, val); }
 
+    /// cfgSetFromJson for array
     template <typename T, size_t N>
     static void cfgSetFromJson(nlohmann::json& js, std::array<T, N>& val) { cfgContainerSetFromJson(js, val); }
 
+    /// cfgSetFromJson for set
     template <typename T>
     static void cfgSetFromJson(nlohmann::json& js, std::set<T>& val) { cfgContainerSetFromJson(js, val); }
 
+    /// cfgSetFromJson for map
     template <typename T1, typename T2>
     static void cfgSetFromJson(nlohmann::json& js, std::map<T1, T2>& val) {
         val.clear();
@@ -132,6 +136,7 @@ protected:
         }
     }
 
+    /// cfgContainerSetFromJson helper function for other containers
     template <typename Container>
     static void cfgContainerSetFromJson(nlohmann::json& js, Container& container) {
         clear_helper(container);
@@ -145,7 +150,7 @@ protected:
     }
 
     /// cfgSetFromJson for all other types
-    /// the enable_if is required to prevent it from matching on Configurator descendants
+    /// the enable_if is required to prevent it from matching on ConfiguratorJson descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
     cfgSetFromJson(nlohmann::json& js, T& val){
@@ -173,15 +178,19 @@ protected:
         cfgWriteToJsonHelper(js, (T&)val);
     }
 
+    /// cfgWriteToJsonHelper for vector
     template <typename T>
     static void cfgWriteToJsonHelper(nlohmann::json& js, std::vector<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
+    /// cfgWriteToJsonHelper for array
     template <typename T, size_t N>
     static void cfgWriteToJsonHelper(nlohmann::json& js, std::array<T, N>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
+    /// cfgWriteToJsonHelper for set
     template <typename T>
     static void cfgWriteToJsonHelper(nlohmann::json& js, std::set<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
+    /// cfgWriteToJsonHelper for map
     template <typename T1, typename T2>
     static void cfgWriteToJsonHelper(nlohmann::json& js, std::map<T1, T2>& val) {
         for(auto& pair : val) {
@@ -191,6 +200,7 @@ protected:
         }
     }
 
+    /// cfgContainerWriteToJsonHelper for other containers
     template <typename Container>
     static void cfgContainerWriteToJsonHelper(nlohmann::json& js, Container& container) {
         js = nlohmann::json::array();
@@ -202,7 +212,7 @@ protected:
     }
 
     /// cfgWriteToJsonHelper for all other types
-    /// the enable_if is required to prevent it from matching on Configurator descendants
+    /// the enable_if is required to prevent it from matching on ConfiguratorJson descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
     cfgWriteToJsonHelper(nlohmann::json& js, T& val){
@@ -258,21 +268,13 @@ protected:
     }
 };
 
-void to_json(nlohmann::json& js, ConfiguratorJson& cfg) {
-    js = cfg.to_json();
-}
-
-void from_json(nlohmann::json& js, ConfiguratorJson& cfg) {
-    cfg.from_json(js);
-}
-
 //////////////////////////////////////////////////////////////////
 // Macros to automatically generate the cfgMultiFunction method in
 // descendant classes.
 
 // automatically generates subclass constructor and begins cfgMultiFunction method
 #define CFGJS_HEADER(structName) \
-  structName() { cfgMultiFunction(CFGJS_INIT_ALL,NULL,NULL,NULL,NULL); } \
+  structName() { cfgMultiFunction(CFGJS_INIT_ALL,nullptr,nullptr,nullptr,nullptr); } \
   std::string getStructName() { return #structName; } \
   int cfgMultiFunction(MFType mfType, const std::string* str, \
     nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
@@ -304,4 +306,4 @@ void from_json(nlohmann::json& js, ConfiguratorJson& cfg) {
 // closes out cfgMultiFunction method
 #define CFGJS_TAIL return retVal; }
 
-};  //namespace codepi
+}  //namespace codepi
