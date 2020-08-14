@@ -26,7 +26,6 @@
 //TODO:
 // add support for containers of objects
 // add to jenkins
-// add to allrepos
 
 namespace codepi{
 
