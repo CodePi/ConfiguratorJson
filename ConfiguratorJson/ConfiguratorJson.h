@@ -23,14 +23,17 @@
 #include <iomanip>
 #include "Optional.h"
 
-//TODO: add support for containers of objects
+//TODO:
+// add support for containers of objects
+// add to jenkins
+// add to allrepos
 
 namespace codepi{
 
 class ConfiguratorJson{
 public:
 
-    // to
+    // serialize to json
     nlohmann::json to_json(){
         nlohmann::json j;
         cfgMultiFunction(CFGJS_WRITE_ALL, NULL, NULL, &j, NULL);
@@ -48,7 +51,7 @@ public:
         to_stream(ofs ,indent);
     }
 
-    // from
+    // deserialize from json
     void from_json(nlohmann::json& js){
         for(auto& kv : js.items()){
             cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), NULL, NULL);
@@ -69,24 +72,11 @@ public:
         from_stream(ifs);
     }
 
+    // comparison
     bool operator==(ConfiguratorJson& other) { return this->to_json()==other.to_json();}
     bool operator!=(ConfiguratorJson& other) { return this->to_json()!=other.to_json();}
 
     virtual std::string getStructName()=0;
-
-    void set(const std::string& varName, nlohmann::json & js){
-        if(varName=="include"){ // e.g. "include = filename"
-            std::string filename;
-            //TODO: cfgSetFromStream(js,filename); //get filename
-            assert(false);
-            //TODO: readFile(filename);  //parse contents of file (recurse)
-        }else{ // set varName from contents of stream
-            // set value of variable by parsing stream
-            int rc=cfgMultiFunction(CFGJS_SET,&varName,&js,NULL,NULL);
-            if(rc==0) throwError("Configurator ("+getStructName()+") error, key not recognized: "+varName);
-            if(rc>1) throwError("Configurator ("+getStructName()+") error, multiple keys with the same name not allowed: "+varName);
-        }
-    }
 
 protected:
     enum MFType{CFGJS_INIT_ALL,CFGJS_SET,CFGJS_WRITE_ALL};
@@ -103,17 +93,26 @@ protected:
     /// overridable method called on parse error
     virtual void throwError(std::string error){ throw std::runtime_error(error); }
 
+
+    //////////////////////////////////////////////////////////////////
+    // cfgSetFromJson(json, val)
+    // Used internally by cfgMultiFunction
+    // Sets value of val based on contents of json
+    // Overloaded for multiple types: string, configurator descendants, bool,
+    //   pair, various STL containers, and primitives
+
+    /// cfgSetFromJson for descendants of ConfiguratorJson
     void cfgSetFromJson(nlohmann::json& js, ConfiguratorJson& cfg){
         cfg.from_json(js);
     }
 
-    /// cfgSetFromStream for Optional<T>
+    /// cfgSetFromJson for Optional<T>
     template <typename T>
     static void cfgSetFromJson(nlohmann::json& js, Optional<T>& val){
         cfgSetFromJson(js, (T&)val);
     }
 
-    /// cfgSetFromStream for all other types
+    /// cfgSetFromJson for all other types
     /// the enable_if is required to prevent it from matching on Configurator descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
@@ -121,32 +120,33 @@ protected:
         val = js.get<T>();
     }
 
+    //////////////////////////////////////////////////////////////////
+    // cfgWriteToJsonHelper(stream, val)
+    // Used internally by cfgMultiFunction
+    // Writes the contents of val to the json
+    // Overloaded for multiple types: string, configurator descendants, bool,
+    //   pair, various STL containers, and primitives
+
+    /// cfgWriteToJsonHelper for descendants of ConfiguratorJson
     void cfgWriteToJsonHelper(nlohmann::json& js, ConfiguratorJson& val){
         js = val.to_json();
     }
 
-    /// cfgWriteToStreamHelper for Optional<T>
+    /// cfgWriteToJsonHelper for Optional<T>
     /// Prints contents of Optional.
     template <typename T>
     static void cfgWriteToJsonHelper(nlohmann::json& js, Optional<T>& opt){
         // shouldn't be able to get this far if not set
-        if(!opt.isSet()) throw std::runtime_error("cfgWriteToStreamHelper Optional<T>: this shouldn't happen");
+        if(!opt.isSet()) throw std::runtime_error("cfgWriteToJsonHelper Optional<T>: this shouldn't happen");
         cfgWriteToJsonHelper(js, (T&)opt);
     }
 
-    /// cfgWriteToStreamHelper for all other types
+    /// cfgWriteToJsonHelper for all other types
     /// the enable_if is required to prevent it from matching on Configurator descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
     cfgWriteToJsonHelper(nlohmann::json& js, T& val){
         js = val;
-    }
-
-    static std::string stripSpaces(const std::string& in){
-        size_t a=in.find_first_not_of(" \t\r\n"); //find first non-space
-        size_t b=in.find_last_not_of(" \t\r\n"); //find last non-space
-        if(a==std::string::npos) return ""; //all white spaces
-        return in.substr(a,b-a+1); //get rid of leading or trailing spaces
     }
 
     /// returns true if optional type and value is set
@@ -160,9 +160,7 @@ protected:
     static bool cfgIsSetOrNotOptional(T& t){
         return true;
     }
-
 };
-
 
 //////////////////////////////////////////////////////////////////
 // Macros to automatically generate the cfgMultiFunction method in
@@ -201,6 +199,5 @@ protected:
 
 // closes out cfgMultiFunction method
 #define CFGJS_TAIL return retVal; }
-
 
 };  //namespace codepi
