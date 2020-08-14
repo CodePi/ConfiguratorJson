@@ -5,8 +5,6 @@
 #include <fstream>
 #include <iomanip>
 
-//TODO remove indent
-
 namespace codepi{
 
 class ConfiguratorJson{
@@ -15,7 +13,7 @@ public:
     // to
     nlohmann::json to_json(){
         nlohmann::json j;
-        cfgMultiFunction(CFGJS_WRITE_ALL, NULL, NULL, NULL, &j, NULL);
+        cfgMultiFunction(CFGJS_WRITE_ALL, NULL, NULL, &j, NULL);
         return j;
     }
     std::string to_string(int indent=-1){
@@ -33,8 +31,7 @@ public:
     // from
     void from_json(nlohmann::json& js){
         for(auto& kv : js.items()){
-            std::string subVar = ""; //TODO
-            cfgMultiFunction(CFGJS_SET, &kv.key(), &subVar, &kv.value(), NULL, NULL);
+            cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), NULL, NULL);
         }
     }
     void from_string(const std::string& str) {
@@ -64,10 +61,8 @@ public:
             assert(false);
             //TODO: readFile(filename);  //parse contents of file (recurse)
         }else{ // set varName from contents of stream
-            std::string subVar;
-
             // set value of variable by parsing stream
-            int rc=cfgMultiFunction(CFGJS_SET,&varName,&subVar,&js,NULL,NULL);
+            int rc=cfgMultiFunction(CFGJS_SET,&varName,&js,NULL,NULL);
             if(rc==0) throwError("Configurator ("+getStructName()+") error, key not recognized: "+varName);
             if(rc>1) throwError("Configurator ("+getStructName()+") error, multiple keys with the same name not allowed: "+varName);
         }
@@ -79,7 +74,7 @@ protected:
     /// Helper method that is called by all of the public methods above.
     ///   This method is automatically generated in subclass using macros below
     ///   Returns the number of variables matched
-    virtual int cfgMultiFunction(MFType mfType, const std::string* str, const std::string* subVar,
+    virtual int cfgMultiFunction(MFType mfType, const std::string* str,
                                  nlohmann::json* jsonIn, nlohmann::json* jsonOut,
                                  ConfiguratorJson* other)=0;
 
@@ -88,7 +83,7 @@ protected:
     /// overridable method called on parse error
     virtual void throwError(std::string error){ throw std::runtime_error(error); }
 
-    void cfgSetFromJson(nlohmann::json& js, ConfiguratorJson& cfg, const std::string& subVar){
+    void cfgSetFromJson(nlohmann::json& js, ConfiguratorJson& cfg){
         cfg.from_json(js);
     }
 
@@ -96,8 +91,7 @@ protected:
     /// the enable_if is required to prevent it from matching on Configurator descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgSetFromJson(nlohmann::json& js,  T& val, const std::string& subVar=""){
-        if(!subVar.empty()) throw std::runtime_error("!subVar.empty()");
+    cfgSetFromJson(nlohmann::json& js,  T& val){
         val = js.get<T>();
     }
 
@@ -128,9 +122,9 @@ protected:
 
 // automatically generates subclass constructor and begins cfgMultiFunction method
 #define CFGJS_HEADER(structName) \
-  structName() { cfgMultiFunction(CFGJS_INIT_ALL,NULL,NULL,NULL,NULL,NULL); } \
+  structName() { cfgMultiFunction(CFGJS_INIT_ALL,NULL,NULL,NULL,NULL); } \
   std::string getStructName() { return #structName; } \
-  int cfgMultiFunction(MFType mfType, const std::string* str, const std::string* subVar, \
+  int cfgMultiFunction(MFType mfType, const std::string* str, \
     nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
     int retVal=0; \
     structName* otherPtr; \
@@ -141,7 +135,7 @@ protected:
 #define CFGJS_ENTRY2(varName, defaultVal) \
   if(mfType==CFGJS_INIT_ALL) { \
     /*TODOif(cfgIsSetOrNotOptional(varName))*/ {varName = defaultVal;retVal++;} \
-    } else if(mfType==CFGJS_SET && #varName==*str) { cfgSetFromJson(*jsonIn,varName,*subVar);retVal++;} \
+    } else if(mfType==CFGJS_SET && #varName==*str) { cfgSetFromJson(*jsonIn,varName);retVal++;} \
   else if(mfType==CFGJS_WRITE_ALL) { \
     /*TODOif(cfgIsSetOrNotOptional(varName))*/ { \
       nlohmann::json jsonTmp;                    \
