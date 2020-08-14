@@ -26,25 +26,32 @@ public:
     }
     void to_file(const std::string& fname, int indent=-1){
         std::ofstream ofs(fname);
+        if(!ofs) throw std::runtime_error("ConfiguratorJson::to_file: file could not be opened: "+fname);
         to_stream(ofs ,indent);
     }
 
     // from
-    void from_json(const nlohmann::json& j){
-        cfgMultiFunction(CFGJS_SET, NULL, NULL, &j, NULL, NULL);
+    void from_json(const nlohmann::json& js){
+        for(auto& kv : js.items()){
+            std::string baseVar = ""; //TODO
+            cfgMultiFunction(CFGJS_SET, &baseVar, &kv.key(), &js, NULL, NULL);
+        }
     }
     void from_string(const std::string& str) {
         from_json(nlohmann::json::parse(str));
-    }
-    void from_file(const std::string& fname) {
-        std::ifstream ifs(fname);
-        from_stream(ifs);
     }
     void from_stream(std::istream& is) {
         nlohmann::json j;
         is >> j;
         from_json(j);
     }
+    void from_file(const std::string& fname) {
+        std::ifstream ifs(fname);
+        if(!ifs) throw std::runtime_error("ConfiguratorJson::from_file: file could not be opened: "+fname);
+        from_stream(ifs);
+    }
+
+    virtual std::string getStructName()=0;
 
 protected:
     enum MFType{CFGJS_INIT_ALL,CFGJS_SET,CFGJS_WRITE_ALL,CFGJS_COMPARE};
@@ -52,7 +59,7 @@ protected:
     /// Helper method that is called by all of the public methods above.
     ///   This method is automatically generated in subclass using macros below
     ///   Returns the number of variables matched
-    virtual int cfgMultiFunction(MFType mfType, std::string* str, std::string* subVar,
+    virtual int cfgMultiFunction(MFType mfType, const std::string* str, const std::string* subVar,
                                  const nlohmann::json* jsonIn, nlohmann::json* jsonOut,
                                  ConfiguratorJson* other)=0;
 
@@ -67,7 +74,8 @@ protected:
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
     cfgSetFromJson(const nlohmann::json& js,  T& val, const std::string& subVar=""){
         if(!subVar.empty()) throw std::runtime_error("!subVar.empty()");
-        //TODOval = js;
+        std::cout << js << "\n";
+        //val = js;
     }
 
     /// cfgWriteToStreamHelper for all other types
@@ -84,6 +92,13 @@ protected:
     cfgCompareHelper(T& a, T& b){
         return !(a==b);
     }
+
+    static std::string stripSpaces(const std::string& in){
+        size_t a=in.find_first_not_of(" \t\r\n"); //find first non-space
+        size_t b=in.find_last_not_of(" \t\r\n"); //find last non-space
+        if(a==std::string::npos) return ""; //all white spaces
+        return in.substr(a,b-a+1); //get rid of leading or trailing spaces
+    }
 };
 
 
@@ -95,7 +110,7 @@ protected:
 #define CFGJS_HEADER(structName) \
   structName() { cfgMultiFunction(CFGJS_INIT_ALL,NULL,NULL,NULL,NULL,NULL); } \
   std::string getStructName() { return #structName; } \
-  int cfgMultiFunction(MFType mfType, std::string* str, std::string* subVar, \
+  int cfgMultiFunction(MFType mfType, const std::string* str, const std::string* subVar, \
     const nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
     int retVal=0; \
     structName* otherPtr; \
@@ -125,7 +140,6 @@ protected:
 #define CFGJS_PARENT(parentName) \
   int rc=parentName::cfgMultiFunction(mfType,str,subVar,streamIn,streamOut,other); \
   retVal+=rc;
-
 
 // closes out cfgMultiFunction method
 #define CFGJS_TAIL return retVal; }

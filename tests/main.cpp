@@ -64,6 +64,7 @@ struct TestConfig : public codepi::ConfiguratorJson{
 
 int main() {
     TestConfig tc;
+    tc.jjj = 17;
     tc.k = {1,2,3,4,5};
     tc.arr = {1,2,3,4,5,6,7,8,9,10};
     tc.intSet = {3,1,4,1,5,9};
@@ -73,5 +74,11 @@ int main() {
     tc.n = "foo";
     tc.strList = {"a","b","c"};
     tc.b = true;
-    cout << tc.to_string(2) << "\n";
+    string str = tc.to_string(2);
+    cout << str << "\n";
+
+    TestConfig tc2;
+    tc2.from_string(str);
+    cout << tc2.to_string() << "\n";
+    //TODO: cout << (tc==tc) << "\n";
 }
