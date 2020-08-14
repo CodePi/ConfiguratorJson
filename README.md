@@ -36,12 +36,12 @@ int main(){
   config2.exampleSub.exampleString = "a string";
   config2.exampleSub.exampleVector = { 1, 2, 3 };
   config2.anotherInt = 2;
-  cout << config2.toString() << endl;
-  config2.writeToFile("file.txt");
+  cout << config2.to_string() << endl;
+  config2.to_file("file.txt");
 
   Config2 config2b;
-  config2b.readFile("file.txt");
-  cout << config2b.toString() << endl;
+  config2b.from_file("file.txt");
+  cout << config2b.to_string() << endl;
 }
 ```
 
