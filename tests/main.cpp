@@ -12,7 +12,7 @@ struct SubConfig2:public codepi::ConfiguratorJson{
     CFGJS_ENTRY2(k,9)
     CFGJS_TAIL
 };
-/*
+
 struct SubConfig1:public SubConfig2{
     int i,j;
 
@@ -21,7 +21,7 @@ struct SubConfig1:public SubConfig2{
     CFGJS_ENTRY1(j)
     CFGJS_PARENT(SubConfig2)
     CFGJS_TAIL
-};*/
+};
 
 struct TestConfig : public codepi::ConfiguratorJson{
 
@@ -33,10 +33,10 @@ struct TestConfig : public codepi::ConfiguratorJson{
     std::pair<std::string, float> pair2;
     std::map<std::string, int> map;
     std::string n;
-    //SubConfig1 s;
+    SubConfig1 s;
     //std::vector<SubConfig1> t;
     std::vector<std::string> strList;
-    //SubConfig1 u;
+    SubConfig1 u;
     bool b;
     //codepi::Optional<int> opt1, opt2, opt3;
     //codepi::Optional< std::vector<int> > optvec;
@@ -51,10 +51,10 @@ struct TestConfig : public codepi::ConfiguratorJson{
     CFGJS_ENTRY1(pair2)
     CFGJS_ENTRY1(map)
     CFGJS_ENTRY2(n,"hello")
-    //CFGJS_ENTRY1(s)
+    CFGJS_ENTRY1(s)
     //CFGJS_ENTRY1(t)
     CFGJS_ENTRY1(strList)
-    //CFGJS_ENTRY1(u)
+    CFGJS_ENTRY1(u)
     CFGJS_ENTRY1(b)
     //CFGJS_ENTRY1(opt1)
     //CFGJS_ENTRY1(opt2)
@@ -74,6 +74,9 @@ int main() {
     tc.pair2 = {"goodbye", 7};
     tc.map = {{"a",123}};
     tc.n = "foo";
+    tc.s.i = 5;
+    tc.s.j = 6;
+    tc.s.k = 7;
     tc.strList = {"a","b","c"};
     tc.b = true;
     string str = tc.to_string();

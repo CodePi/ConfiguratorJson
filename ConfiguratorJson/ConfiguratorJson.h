@@ -5,6 +5,9 @@
 #include <fstream>
 #include <iomanip>
 
+//TODO: add support for containers of objects
+//TODO: add support for optional
+
 namespace codepi{
 
 class ConfiguratorJson{
@@ -148,7 +151,7 @@ protected:
 // calls cfgMultiFunction method of parent
 // allows for inheritance
 #define CFGJS_PARENT(parentName) \
-  int rc=parentName::cfgMultiFunction(mfType,str,subVar,streamIn,streamOut,other); \
+  int rc=parentName::cfgMultiFunction(mfType,str,jsonIn,jsonOut,other); \
   retVal+=rc;
 
 // closes out cfgMultiFunction method
