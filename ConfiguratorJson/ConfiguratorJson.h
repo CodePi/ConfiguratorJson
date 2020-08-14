@@ -51,6 +51,9 @@ public:
         from_stream(ifs);
     }
 
+    bool operator==(ConfiguratorJson& other) { return this->to_json()==other.to_json();}
+    bool operator!=(ConfiguratorJson& other) { return this->to_json()!=other.to_json();}
+
     virtual std::string getStructName()=0;
 
 protected:
@@ -84,13 +87,6 @@ protected:
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
     cfgWriteToJsonHelper(nlohmann::json& js, T& val){
         js = val;
-    }
-
-    /// cfgCompareHelper for any type with defined operator==
-    template <typename T>
-    static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,int>::type
-    cfgCompareHelper(T& a, T& b){
-        return !(a==b);
     }
 
     static std::string stripSpaces(const std::string& in){
@@ -128,9 +124,9 @@ protected:
       cfgWriteToJsonHelper(jsonTmp,varName);    \
       (*jsonOut)[#varName] = jsonTmp; retVal++; \
     } \
-  } else if(mfType==CFGJS_COMPARE) { \
+  } /*else if(mfType==CFGJS_COMPARE) { \
     retVal+=cfgCompareHelper(this->varName,otherPtr->varName); \
-  }
+  }*/
 
 // alternative to CFGJS_ENTRY2 used when default defaultVal is sufficient
 #define CFGJS_ENTRY1(varName) CFGJS_ENTRY2(varName, cfgGetDefaultVal(varName))

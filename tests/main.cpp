@@ -80,5 +80,6 @@ int main() {
     TestConfig tc2;
     tc2.from_string(str);
     cout << tc2.to_string() << "\n";
-    //TODO: cout << (tc==tc) << "\n";
+    cout << (tc==tc) << "\n";
+    cout << (tc==tc2) << "\n";
 }
