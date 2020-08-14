@@ -100,7 +100,7 @@ protected:
     //   pair, various STL containers, and primitives
 
     /// cfgSetFromJson for descendants of ConfiguratorJson
-    void cfgSetFromJson(nlohmann::json& js, ConfiguratorJson& cfg){
+    static void cfgSetFromJson(nlohmann::json& js, ConfiguratorJson& cfg){
         cfg.from_json(js);
     }
 
@@ -108,6 +108,14 @@ protected:
     template <typename T>
     static void cfgSetFromJson(nlohmann::json& js, Optional<T>& val){
         cfgSetFromJson(js, (T&)val);
+    }
+
+    template <typename T>
+    static void cfgSetFromJson(nlohmann::json& js, std::vector<T>& val) {
+        val.resize(js.size());
+        for(int i=0;i<js.size();i++) {
+            cfgSetFromJson(js[i], val[i]);
+        }
     }
 
     /// cfgSetFromJson for all other types
@@ -126,7 +134,7 @@ protected:
     //   pair, various STL containers, and primitives
 
     /// cfgWriteToJsonHelper for descendants of ConfiguratorJson
-    void cfgWriteToJsonHelper(nlohmann::json& js, ConfiguratorJson& val){
+    static void cfgWriteToJsonHelper(nlohmann::json& js, ConfiguratorJson& val){
         js = val.to_json();
     }
 
@@ -137,6 +145,16 @@ protected:
         // shouldn't be able to get this far if not set
         if(!opt.isSet()) throw std::runtime_error("cfgWriteToJsonHelper Optional<T>: this shouldn't happen");
         cfgWriteToJsonHelper(js, (T&)opt);
+    }
+
+    template <typename T>
+    static void cfgWriteToJsonHelper(nlohmann::json& js, std::vector<T>& opt) {
+        js = {};
+        for(int i=0;i<opt.size();i++) {
+            nlohmann::json j;
+            cfgWriteToJsonHelper(j, opt[i]);
+            js.push_back(move(j));
+        }
     }
 
     /// cfgWriteToJsonHelper for all other types
@@ -159,6 +177,14 @@ protected:
         return true;
     }
 };
+
+void to_json(nlohmann::json& js, ConfiguratorJson& cfg) {
+    js = cfg.to_json();
+}
+
+void from_json(nlohmann::json& js, ConfiguratorJson& cfg) {
+    cfg.from_json(js);
+}
 
 //////////////////////////////////////////////////////////////////
 // Macros to automatically generate the cfgMultiFunction method in
