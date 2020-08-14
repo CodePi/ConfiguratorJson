@@ -25,7 +25,6 @@
 
 //TODO:
 // add support for containers of objects
-// add to jenkins
 
 namespace codepi{
 
