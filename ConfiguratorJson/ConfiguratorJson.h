@@ -31,14 +31,15 @@ public:
     }
 
     // from
-    void from_json(const nlohmann::json& js){
+    void from_json(nlohmann::json& js){
         for(auto& kv : js.items()){
             std::string subVar = ""; //TODO
             cfgMultiFunction(CFGJS_SET, &kv.key(), &subVar, &kv.value(), NULL, NULL);
         }
     }
     void from_string(const std::string& str) {
-        from_json(nlohmann::json::parse(str));
+        nlohmann::json js = nlohmann::json::parse(str);
+        from_json(js);
     }
     void from_stream(std::istream& is) {
         nlohmann::json j;
@@ -56,6 +57,22 @@ public:
 
     virtual std::string getStructName()=0;
 
+    void set(const std::string& varName, nlohmann::json & js){
+        if(varName=="include"){ // e.g. "include = filename"
+            std::string filename;
+            //TODO: cfgSetFromStream(js,filename); //get filename
+            assert(false);
+            //TODO: readFile(filename);  //parse contents of file (recurse)
+        }else{ // set varName from contents of stream
+            std::string subVar;
+
+            // set value of variable by parsing stream
+            int rc=cfgMultiFunction(CFGJS_SET,&varName,&subVar,&js,NULL,NULL);
+            if(rc==0) throwError("Configurator ("+getStructName()+") error, key not recognized: "+varName);
+            if(rc>1) throwError("Configurator ("+getStructName()+") error, multiple keys with the same name not allowed: "+varName);
+        }
+    }
+
 protected:
     enum MFType{CFGJS_INIT_ALL,CFGJS_SET,CFGJS_WRITE_ALL,CFGJS_COMPARE};
 
@@ -63,7 +80,7 @@ protected:
     ///   This method is automatically generated in subclass using macros below
     ///   Returns the number of variables matched
     virtual int cfgMultiFunction(MFType mfType, const std::string* str, const std::string* subVar,
-                                 const nlohmann::json* jsonIn, nlohmann::json* jsonOut,
+                                 nlohmann::json* jsonIn, nlohmann::json* jsonOut,
                                  ConfiguratorJson* other)=0;
 
     /// returns default value of type T
@@ -71,13 +88,21 @@ protected:
     /// overridable method called on parse error
     virtual void throwError(std::string error){ throw std::runtime_error(error); }
 
+    void cfgSetFromJson(nlohmann::json& js, ConfiguratorJson& cfg, const std::string& subVar){
+        cfg.from_json(js);
+    }
+
     /// cfgSetFromStream for all other types
     /// the enable_if is required to prevent it from matching on Configurator descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgSetFromJson(const nlohmann::json& js,  T& val, const std::string& subVar=""){
+    cfgSetFromJson(nlohmann::json& js,  T& val, const std::string& subVar=""){
         if(!subVar.empty()) throw std::runtime_error("!subVar.empty()");
         val = js.get<T>();
+    }
+
+    void cfgWriteToJsonHelper(nlohmann::json& js, ConfiguratorJson& val){
+        js = val.to_json();
     }
 
     /// cfgWriteToStreamHelper for all other types
@@ -106,7 +131,7 @@ protected:
   structName() { cfgMultiFunction(CFGJS_INIT_ALL,NULL,NULL,NULL,NULL,NULL); } \
   std::string getStructName() { return #structName; } \
   int cfgMultiFunction(MFType mfType, const std::string* str, const std::string* subVar, \
-    const nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
+    nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
     int retVal=0; \
     structName* otherPtr; \
     if(mfType==CFGJS_COMPARE) {otherPtr = dynamic_cast<structName*>(other); \

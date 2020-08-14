@@ -5,14 +5,14 @@
 using namespace std;
 using namespace codepi;
 
-/*struct SubConfig2:public codepi::ConfiguratorJson{
+struct SubConfig2:public codepi::ConfiguratorJson{
     int k;
 
     CFGJS_HEADER(SubConfig2)
     CFGJS_ENTRY2(k,9)
     CFGJS_TAIL
 };
-
+/*
 struct SubConfig1:public SubConfig2{
     int i,j;
 
@@ -40,6 +40,7 @@ struct TestConfig : public codepi::ConfiguratorJson{
     bool b;
     //codepi::Optional<int> opt1, opt2, opt3;
     //codepi::Optional< std::vector<int> > optvec;
+    SubConfig2 sc2;
 
     CFGJS_HEADER(TestConfig)
     CFGJS_ENTRY2(jjj,12)
@@ -59,6 +60,7 @@ struct TestConfig : public codepi::ConfiguratorJson{
     //CFGJS_ENTRY1(opt2)
     //CFGJS_ENTRY1(opt3)
     //CFGJS_ENTRY1(optvec)
+    CFGJS_ENTRY1(sc2);
     CFGJS_TAIL
 };
 
