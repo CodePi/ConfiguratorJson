@@ -18,13 +18,17 @@
 #pragma once
 
 #include "json.hpp"
+#include <vector>
+#include <map>
+#include <set>
+#include <array>
 #include <string>
 #include <fstream>
 #include <iomanip>
 #include "Optional.h"
 
 //TODO:
-// add support for containers of objects
+// add support for containers of objects (vector, array, set, map).
 
 namespace codepi{
 
@@ -111,10 +115,18 @@ protected:
     }
 
     template <typename T>
-    static void cfgSetFromJson(nlohmann::json& js, std::vector<T>& val) {
-        val.resize(js.size());
+    static void cfgSetFromJson(nlohmann::json& js, std::vector<T>& val) { cfgContainerSetFromJson(js, val); }
+
+    template <typename T, size_t N>
+    static void cfgSetFromJson(nlohmann::json& js, std::array<T, N>& val) { cfgContainerSetFromJson(js, val); }
+
+    template <typename Container>
+    static void cfgContainerSetFromJson(nlohmann::json& js, Container& container) {
+        clear_helper(container);
         for(int i=0;i<js.size();i++) {
-            cfgSetFromJson(js[i], val[i]);
+            typename Container::value_type val;
+            cfgSetFromJson(js[i],val);
+            insert_helper(container, i, val);
         }
     }
 
@@ -141,18 +153,24 @@ protected:
     /// cfgWriteToJsonHelper for Optional<T>
     /// Prints contents of Optional.
     template <typename T>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, Optional<T>& opt){
+    static void cfgWriteToJsonHelper(nlohmann::json& js, Optional<T>& val){
         // shouldn't be able to get this far if not set
-        if(!opt.isSet()) throw std::runtime_error("cfgWriteToJsonHelper Optional<T>: this shouldn't happen");
-        cfgWriteToJsonHelper(js, (T&)opt);
+        if(!val.isSet()) throw std::runtime_error("cfgWriteToJsonHelper Optional<T>: this shouldn't happen");
+        cfgWriteToJsonHelper(js, (T&)val);
     }
 
     template <typename T>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, std::vector<T>& opt) {
+    static void cfgWriteToJsonHelper(nlohmann::json& js, std::vector<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
+
+    template <typename T, size_t N>
+    static void cfgWriteToJsonHelper(nlohmann::json& js, std::array<T, N>& val) { cfgContainerWriteToJsonHelper(js, val); }
+
+    template <typename Container>
+    static void cfgContainerWriteToJsonHelper(nlohmann::json& js, Container& container) {
         js = {};
-        for(int i=0;i<opt.size();i++) {
+        for(auto& val : container) {
             nlohmann::json j;
-            cfgWriteToJsonHelper(j, opt[i]);
+            cfgWriteToJsonHelper(j, val);
             js.push_back(move(j));
         }
     }
@@ -175,6 +193,35 @@ protected:
     template<typename T>
     static bool cfgIsSetOrNotOptional(T& t){
         return true;
+    }
+
+    //////////////////////////////
+    // Helper function to distinguish between stl arrays and other containers
+
+    // clear array by filling it with default values
+    template<typename T, size_t N>
+    static void clear_helper(std::array<T,N>& arr){
+        arr.fill(T());
+    }
+
+    // clear container
+    template<typename Container>
+    static void clear_helper(Container& container){
+        container.clear();
+    }
+
+    // inserting into array by index
+    template<typename T, size_t N>
+    static void insert_helper(std::array<T,N>& arr, size_t i, T& val){
+        if(i>=N) throw std::range_error("insert exceeds array size");
+        arr[i] = val;
+    }
+
+    // inserting into end of container (ignoring index, but should match anyway)
+    template<typename Container, typename T>
+    static void insert_helper(Container& container, size_t i, T& val){
+        assert(container.size()==i);
+        container.insert(container.end(),val);
     }
 };
 
