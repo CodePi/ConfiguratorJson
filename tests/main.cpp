@@ -74,12 +74,11 @@ int main() {
     tc.n = "foo";
     tc.strList = {"a","b","c"};
     tc.b = true;
-    string str = tc.to_string(2);
+    string str = tc.to_string();
     cout << str << "\n";
 
     TestConfig tc2;
     tc2.from_string(str);
     cout << tc2.to_string() << "\n";
-    cout << (tc==tc) << "\n";
-    cout << (tc==tc2) << "\n";
+    assert(tc==tc2);
 }

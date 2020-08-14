@@ -33,8 +33,8 @@ public:
     // from
     void from_json(const nlohmann::json& js){
         for(auto& kv : js.items()){
-            std::string baseVar = ""; //TODO
-            cfgMultiFunction(CFGJS_SET, &baseVar, &kv.key(), &js, NULL, NULL);
+            std::string subVar = ""; //TODO
+            cfgMultiFunction(CFGJS_SET, &kv.key(), &subVar, &kv.value(), NULL, NULL);
         }
     }
     void from_string(const std::string& str) {
@@ -77,8 +77,7 @@ protected:
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
     cfgSetFromJson(const nlohmann::json& js,  T& val, const std::string& subVar=""){
         if(!subVar.empty()) throw std::runtime_error("!subVar.empty()");
-        std::cout << js << "\n";
-        //val = js;
+        val = js.get<T>();
     }
 
     /// cfgWriteToStreamHelper for all other types
