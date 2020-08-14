@@ -187,7 +187,7 @@ protected:
         for(auto& pair : val) {
             nlohmann::json jval;
             cfgWriteToJsonHelper(jval, pair.second);
-            js[pair.first] = jval;
+            js[pair.first] = std::move(jval);
         }
     }
 
@@ -197,7 +197,7 @@ protected:
         for(auto& val : container) {
             nlohmann::json j;
             cfgWriteToJsonHelper(j, remove_const(val));
-            js.push_back(move(j));
+            js.push_back(std::move(j));
         }
     }
 
