@@ -33,23 +33,23 @@ class ConfiguratorJson{
 public:
 
     // serialize to json
-    nlohmann::json to_json(){
+    nlohmann::json to_json() const{
         nlohmann::json j;
-        cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &j, nullptr);
+        remove_const(*this).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &j, nullptr);
         return j;
     }
-    std::string to_string(int indent=-1){
+    std::string to_string(int indent=-1) const{
         return to_json().dump(indent);
     }
-    void to_stream(std::ostream& os, int indent=-1){
+    void to_stream(std::ostream& os, int indent=-1) const{
         os << std::setw(indent) << to_json();
     }
-    void to_file(const std::string& fname, int indent=-1){
+    void to_file(const std::string& fname, int indent=-1) const{
         std::ofstream ofs(fname);
         if(!ofs) throw std::runtime_error("ConfiguratorJson::to_file: file could not be opened: "+fname);
         to_stream(ofs, indent);
     }
-    std::vector<uint8_t> to_bson() {
+    std::vector<uint8_t> to_bson() const{
         return nlohmann::json::to_bson(to_json());
     }
 
