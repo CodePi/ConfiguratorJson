@@ -39,6 +39,7 @@ int main(){
   config2.exampleSub.exampleIntValue = 1;
   config2.exampleSub.exampleString = "a string";
   config2.exampleSub.exampleVector = { 1, 2, 3 };
+  config2.exampleSub.exampleMap = {{"a",1},{"b",2}};
   config2.anotherInt = 2;
   cout << config2.to_string() << endl;
   config2.to_file("file3.txt");
