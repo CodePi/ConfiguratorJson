@@ -35,7 +35,7 @@ public:
     // serialize to json
     nlohmann::json to_json() const{
         nlohmann::json j;
-        remove_const(*this).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &j, nullptr);
+        remove_const(*this).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &j);
         return j;
     }
     std::string to_string(int indent=-1) const{
@@ -56,7 +56,7 @@ public:
     // deserialize from json
     void from_json(const nlohmann::json& js){
         for(auto& kv : js.items()){
-            cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr, nullptr);
+            cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr);
         }
     }
     void from_string(const std::string& str) {
@@ -79,11 +79,11 @@ public:
     }
 
     // comparison
-    bool operator==(ConfiguratorJson& other) { return this->to_json()==other.to_json();}
-    bool operator!=(ConfiguratorJson& other) { return this->to_json()!=other.to_json();}
-    bool operator<(const ConfiguratorJson& other) const { return remove_const(*this).to_json()<remove_const(other).to_json();}
+    bool operator==(const ConfiguratorJson& other) const { return this->to_json()==other.to_json();}
+    bool operator!=(const ConfiguratorJson& other) const { return this->to_json()!=other.to_json();}
+    bool operator<(const ConfiguratorJson& other) const { return to_json() < other.to_json();}
 
-    virtual std::string getStructName()=0;
+    virtual std::string getStructName() const =0;
 
 protected:
     enum MFType{CFGJS_INIT_ALL,CFGJS_SET,CFGJS_WRITE_ALL};
@@ -92,8 +92,7 @@ protected:
     ///   This method is automatically generated in subclass using macros below
     ///   Returns the number of variables matched
     virtual int cfgMultiFunction(MFType mfType, const std::string* str,
-                                 const nlohmann::json* jsonIn, nlohmann::json* jsonOut,
-                                 ConfiguratorJson* other)=0;
+                                 const nlohmann::json* jsonIn, nlohmann::json* jsonOut)=0;
 
     /// returns default value of type T
     template <typename T> static T cfgGetDefaultVal(const T&var){return T();}
@@ -286,10 +285,10 @@ protected:
 
 // automatically generates subclass constructor and begins cfgMultiFunction method
 #define CFGJS_HEADER(structName) \
-  structName() { cfgMultiFunction(CFGJS_INIT_ALL,nullptr,nullptr,nullptr,nullptr); } \
-  std::string getStructName() { return #structName; } \
+  structName() { cfgMultiFunction(CFGJS_INIT_ALL,nullptr,nullptr,nullptr); } \
+  std::string getStructName() const { return #structName; } \
   int cfgMultiFunction(MFType mfType, const std::string* str, \
-    const nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
+    const nlohmann::json* jsonIn, nlohmann::json* jsonOut){ \
     int retVal=0; \
     structName* otherPtr;
 
@@ -312,7 +311,7 @@ protected:
 // calls cfgMultiFunction method of parent
 // allows for inheritance
 #define CFGJS_PARENT(parentName) \
-  int rc=parentName::cfgMultiFunction(mfType,str,jsonIn,jsonOut,other); \
+  int rc=parentName::cfgMultiFunction(mfType,str,jsonIn,jsonOut); \
   retVal+=rc;
 
 // closes out cfgMultiFunction method
