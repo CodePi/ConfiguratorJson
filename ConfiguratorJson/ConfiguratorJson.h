@@ -220,7 +220,7 @@ protected:
         js = nlohmann::json::array();
         for(auto& val : container) {
             nlohmann::json j;
-            cfgWriteToJsonHelper(j, remove_const(val));
+            cfgWriteToJsonHelper(j, val);
             js.push_back(std::move(j));
         }
     }
