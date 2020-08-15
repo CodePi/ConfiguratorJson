@@ -100,7 +100,8 @@ protected:
     template <typename T> static T cfgGetDefaultVal(const T&var){return T();}
     /// overridable method called on parse error
     virtual void throwError(const std::string& error){ throw std::runtime_error(error); }
-
+    /// overridable method used to control whether json keys that don't match members are allowed
+    virtual bool allow_keys_not_in_struct() const { return false; }
 
     //////////////////////////////////////////////////////////////////
     // cfgSetFromJson(json, val)
@@ -113,7 +114,9 @@ protected:
     static void cfgSetFromJson(const nlohmann::json& js, ConfiguratorJson& cfg){
         for(auto& kv : js.items()){
             int rc = cfg.cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr);
-            if(rc==0) throw std::runtime_error("from_json error: "+kv.key()+" not in struct "+cfg.getStructName());
+            if(rc==0 && !cfg.allow_keys_not_in_struct()) {
+                throw std::runtime_error("from_json error: \"" + kv.key() + "\" not a member of " + cfg.getStructName());
+            }
         }
     }
 
