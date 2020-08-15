@@ -183,11 +183,9 @@ protected:
     /// cfgWriteToJsonHelper for Optional<T>
     /// Prints contents of Optional.
     template <typename T>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, Optional<T>& val){
-        //TODO: figure why Optional can't be const?
-        // shouldn't be able to get this far if not set
+    static void cfgWriteToJsonHelper(nlohmann::json& js, const Optional<T>& val){
         if(!val.isSet()) throw std::runtime_error("cfgWriteToJsonHelper Optional<T>: this shouldn't happen");
-        cfgWriteToJsonHelper(js, (T&)val);
+        cfgWriteToJsonHelper(js, (const T&)val);
     }
 
     /// cfgWriteToJsonHelper for vector

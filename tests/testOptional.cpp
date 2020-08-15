@@ -88,6 +88,11 @@ int main(){
   curr = ov10->data();
   printf("assignment by copy wrapper:\t%p\t%p\t%s\n", orig, curr, pf(orig!=curr));
 
+  // test11
+  const Optional<int> v11 = 5;
+  const int& v11i = v11;
+  printf("const ref test: %s\n", pf(v11==v11i));
+
   if(!g_all_pass) {
       printf("not all pass\n");
       return -1;
