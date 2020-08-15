@@ -1,8 +1,8 @@
 cmake-build-*/
 build/
 *~
-TestConfig
-TestConfig2
-TestConfig3
-testOptional
+TestConfigJS
+TestConfigJS2
+TestConfigJS3
+testOptionalCJS
 file3.txt

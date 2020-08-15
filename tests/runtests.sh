@@ -3,17 +3,17 @@
 set -e
 
 echo --------------------------
-echo TestConfig
-./TestConfig
+echo TestConfigJS
+./TestConfigJS
 
 echo --------------------------
-echo TestConfig2
-./TestConfig2
+echo TestConfigJS2
+./TestConfigJS2
 
 echo --------------------------
-echo TestConfig3
-./TestConfig3
+echo TestConfigJS3
+./TestConfigJS3
 
 echo --------------------------
-echo testOptional
-./testOptional
+echo testOptionalCJS
+./testOptionalCJS

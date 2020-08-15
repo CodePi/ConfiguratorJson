@@ -1,6 +1,6 @@
 CC=g++
 HDR = ../ConfiguratorJson/ConfiguratorJson.h ../ConfiguratorJson/Optional.h ../ConfiguratorJson/json.hpp
-TESTS = TestConfig TestConfig2 TestConfig3 testOptional
+TESTS = TestConfigJS TestConfigJS2 TestConfigJS3 testOptionalCJS
 FLAGS = -Wall -Werror -std=c++11
 
 all : $(TESTS)
@@ -9,4 +9,4 @@ all : $(TESTS)
 	$(CC) $(FLAGS) -o $@ $<
 
 clean:
-	rm $(TESTS)
+	rm -f $(TESTS)
