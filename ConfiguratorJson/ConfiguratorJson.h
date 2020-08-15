@@ -189,7 +189,7 @@ protected:
     }
 
     //////////////////////////////////////////////////////////////////
-    // cfgWriteToJson(stream, val)
+    // cfgWriteToJson(json, val)
     // Used internally by cfgMultiFunction
     // Writes the contents of val to the json
     // Overloaded for multiple types: string, configurator descendants, bool,
@@ -228,7 +228,7 @@ protected:
         for(auto& kv : val) {
             nlohmann::json jval;
             cfgWriteToJson(jval, kv.second);
-            js[kv.first] = jval;
+            js[kv.first] = std::move(jval);
         }
     }
 
@@ -307,7 +307,7 @@ protected:
         container.insert(container.end(),std::forward<U>(val));
     }
 
-    /// helper function for cfgSetFromStream for pairs
+    /// helper function for cfgSetFromJson for pairs
     /// workaround: a map's value_type is pair<const T1, T2> this casts off the const
     template <typename T>
     static T& remove_const(const T& val){
@@ -340,7 +340,7 @@ protected:
     if(cfgIsSetOrNotOptional(varName)) { \
       nlohmann::json jsonTmp;                    \
       cfgWriteToJson(jsonTmp,varName);    \
-      (*jsonOut)[#varName] = jsonTmp; retVal++; \
+      (*jsonOut)[#varName] = std::move(jsonTmp); retVal++; \
     } \
   }
 
