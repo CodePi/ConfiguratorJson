@@ -315,6 +315,10 @@ protected:
 // automatically generates subclass constructor and begins cfgMultiFunction method
 #define CFGJS_HEADER(structName) \
   structName() { cfgMultiFunction(CFGJS_INIT_ALL,nullptr,nullptr,nullptr); } \
+  CFGJS_HEADER_NO_CTOR(structName)
+
+// same as CFGJS_HEADER, but without generating a constructor
+#define CFGJS_HEADER_NO_CTOR(structName) \
   std::string getStructName() const { return #structName; } \
   int cfgMultiFunction(MFType mfType, const std::string* str, \
     const nlohmann::json* jsonIn, nlohmann::json* jsonOut){ \
