@@ -83,6 +83,7 @@ public:
     bool operator<(const ConfiguratorJson& other) const { return to_json() < other.to_json();}
 
     virtual std::string getStructName() const =0;
+    virtual ~ConfiguratorJson() =default;
 
 protected:
     enum MFType{CFGJS_INIT_ALL,CFGJS_SET,CFGJS_WRITE_ALL};
