@@ -110,7 +110,7 @@ int main() {
     cout << "cbor size: " << nlohmann::json::to_cbor(tc.to_json()).size() << "\n";
     cout << "msgpack size: " << nlohmann::json::to_msgpack(tc.to_json()).size() << "\n";
 
-    // config conversion to binary work
+    // test conversion to binary
     TestConfig tc3, tc4, tc5, tc6;
     tc3.from_bson(tc.to_bson());
     tc4.from_json(nlohmann::json::from_ubjson(nlohmann::json::to_ubjson(tc.to_json())));
