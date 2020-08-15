@@ -97,13 +97,29 @@ int main() {
     string str = tc.to_string();
     cout << str << "\n";
 
+    // test serialization/deserialization
     TestConfig tc2;
     tc2.from_string(str);
     cout << tc2.to_string() << "\n";
     assert(tc==tc2);
 
-    vector<uint8_t> bson = tc2.to_bson();
-    cout << bson.size() << "\n";
+    // sizes of serialization
+    cout << "json size: " << str.size() << "\n";
+    cout << "bson size: " << tc.to_bson().size() << "\n";
+    cout << "ubjson size: " << nlohmann::json::to_ubjson(tc.to_json()).size() << "\n";
+    cout << "cbor size: " << nlohmann::json::to_cbor(tc.to_json()).size() << "\n";
+    cout << "msgpack size: " << nlohmann::json::to_msgpack(tc.to_json()).size() << "\n";
+
+    // config conversion to binary work
+    TestConfig tc3, tc4, tc5, tc6;
+    tc3.from_bson(tc.to_bson());
+    tc4.from_json(nlohmann::json::from_ubjson(nlohmann::json::to_ubjson(tc.to_json())));
+    tc5.from_json(nlohmann::json::from_cbor(nlohmann::json::to_cbor(tc.to_json())));
+    tc6.from_json(nlohmann::json::from_msgpack(nlohmann::json::to_msgpack(tc.to_json())));
+    assert(tc==tc3);
+    assert(tc==tc4);
+    assert(tc==tc5);
+    assert(tc==tc6);
 
     return 0;
 }
