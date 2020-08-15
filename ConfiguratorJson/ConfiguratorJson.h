@@ -113,8 +113,8 @@ protected:
     /// cfgSetFromJson for descendants of ConfiguratorJson
     static void cfgSetFromJson(const nlohmann::json& js, ConfiguratorJson& cfg){
         for(auto& kv : js.items()){
-            int rc = cfg.cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr);
-            if(rc==0 && !cfg.allow_keys_not_in_struct()) {
+            int num_matches = cfg.cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr);
+            if(num_matches==0 && !cfg.allow_keys_not_in_struct()) {
                 throw std::runtime_error("from_json error: \"" + kv.key() + "\" not a member of " + cfg.getStructName());
             }
         }
