@@ -146,6 +146,7 @@ protected:
     }
 
     /// cfgSetFromJson for other maps
+    /// Note: json doesn't properly support map with non-string key.  So treat as array of pairs.
     template <typename T1, typename T2>
     static void cfgSetFromJson(const nlohmann::json& js, std::map<T1, T2>& val) { cfgContainerSetFromJson(js, val); }
 
@@ -221,6 +222,7 @@ protected:
     }
 
     /// cfgWriteToJsonHelper for other maps
+    /// Note: json doesn't properly support map with non-string key.  So treat as array of pairs.
     template <typename T1, typename T2>
     static void cfgWriteToJsonHelper(nlohmann::json& js, const std::map<T1, T2>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
