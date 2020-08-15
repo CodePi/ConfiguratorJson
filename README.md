@@ -57,7 +57,7 @@ See tests directory for more examples.
     "exampleFloat":0,
     "exampleString":"a string",
     "exampleVector":[1,2,3],
-    "exampleMap":[["a",1],["b",2]]
+    "exampleMap":{"a":1,"b":2}
   },
   "anotherInt":2
 }

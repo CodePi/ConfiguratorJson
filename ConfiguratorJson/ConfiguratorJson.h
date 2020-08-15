@@ -36,7 +36,7 @@ public:
     // serialize to json
     nlohmann::json to_json() const{
         nlohmann::json js;
-        cfgWriteToJsonHelper(js, *this);
+        cfgWriteToJson(js, *this);
         return js;
     }
     std::string to_string(int indent=-1) const{
@@ -180,59 +180,59 @@ protected:
     }
 
     //////////////////////////////////////////////////////////////////
-    // cfgWriteToJsonHelper(stream, val)
+    // cfgWriteToJson(stream, val)
     // Used internally by cfgMultiFunction
     // Writes the contents of val to the json
     // Overloaded for multiple types: string, configurator descendants, bool,
     //   pair, various STL containers, and primitives
 
-    /// cfgWriteToJsonHelper for descendants of ConfiguratorJson
-    static void cfgWriteToJsonHelper(nlohmann::json& js, const ConfiguratorJson& val){
+    /// cfgWriteToJson for descendants of ConfiguratorJson
+    static void cfgWriteToJson(nlohmann::json& js, const ConfiguratorJson& val){
         remove_const(val).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &js);
     }
 
-    /// cfgWriteToJsonHelper for Optional<T>
+    /// cfgWriteToJson for Optional<T>
     /// Prints contents of Optional.
     template <typename T>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, const Optional<T>& val){
-        if(!val.isSet()) throw std::runtime_error("cfgWriteToJsonHelper Optional<T>: this shouldn't happen");
-        cfgWriteToJsonHelper(js, (const T&)val);
+    static void cfgWriteToJson(nlohmann::json& js, const Optional<T>& val){
+        if(!val.isSet()) throw std::runtime_error("cfgWriteToJson Optional<T>: this shouldn't happen");
+        cfgWriteToJson(js, (const T&)val);
     }
 
-    /// cfgWriteToJsonHelper for vector
+    /// cfgWriteToJson for vector
     template <typename T>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, const std::vector<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJson(nlohmann::json& js, const std::vector<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
-    /// cfgWriteToJsonHelper for array
+    /// cfgWriteToJson for array
     template <typename T, size_t N>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, const std::array<T, N>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJson(nlohmann::json& js, const std::array<T, N>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
-    /// cfgWriteToJsonHelper for set
+    /// cfgWriteToJson for set
     template <typename T>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, const std::set<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJson(nlohmann::json& js, const std::set<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
-    /// cfgWriteToJsonHelper for map with string as key
+    /// cfgWriteToJson for map with string as key
     template <typename T2>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, const std::map<std::string, T2>& val) {
+    static void cfgWriteToJson(nlohmann::json& js, const std::map<std::string, T2>& val) {
         for(auto& kv : val) {
             nlohmann::json jval;
-            cfgWriteToJsonHelper(jval, kv.second);
+            cfgWriteToJson(jval, kv.second);
             js[kv.first] = jval;
         }
     }
 
-    /// cfgWriteToJsonHelper for other maps
+    /// cfgWriteToJson for other maps
     /// Note: json doesn't properly support map with non-string key.  So treat as array of pairs.
     template <typename T1, typename T2>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, const std::map<T1, T2>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJson(nlohmann::json& js, const std::map<T1, T2>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
-    /// cfgWriteToJsonHelper for pair
+    /// cfgWriteToJson for pair
     template <typename T1, typename T2>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, const std::pair<T1, T2>& val) {
+    static void cfgWriteToJson(nlohmann::json& js, const std::pair<T1, T2>& val) {
         nlohmann::json jfirst;
         nlohmann::json jsecond;
-        cfgWriteToJsonHelper(jfirst, val.first);
-        cfgWriteToJsonHelper(jsecond, val.second);
+        cfgWriteToJson(jfirst, val.first);
+        cfgWriteToJson(jsecond, val.second);
         js = {std::move(jfirst), std::move(jsecond)};
     }
 
@@ -242,16 +242,16 @@ protected:
         js = nlohmann::json::array();
         for(auto& val : container) {
             nlohmann::json j;
-            cfgWriteToJsonHelper(j, val);
+            cfgWriteToJson(j, val);
             js.push_back(std::move(j));
         }
     }
 
-    /// cfgWriteToJsonHelper for all other types
+    /// cfgWriteToJson for all other types
     /// the enable_if is required to prevent it from matching on ConfiguratorJson descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgWriteToJsonHelper(nlohmann::json& js, const T& val){
+    cfgWriteToJson(nlohmann::json& js, const T& val){
         js = val;
     }
 
@@ -324,7 +324,7 @@ protected:
   else if(mfType==CFGJS_WRITE_ALL) { \
     if(cfgIsSetOrNotOptional(varName)) { \
       nlohmann::json jsonTmp;                    \
-      cfgWriteToJsonHelper(jsonTmp,varName);    \
+      cfgWriteToJson(jsonTmp,varName);    \
       (*jsonOut)[#varName] = jsonTmp; retVal++; \
     } \
   }
