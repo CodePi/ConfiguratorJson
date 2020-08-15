@@ -15,8 +15,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-//TODO: option to check for key not in struct.  It was lost in translation.
-
 #pragma once
 
 #include <vector>
@@ -114,7 +112,8 @@ protected:
     /// cfgSetFromJson for descendants of ConfiguratorJson
     static void cfgSetFromJson(const nlohmann::json& js, ConfiguratorJson& cfg){
         for(auto& kv : js.items()){
-            cfg.cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr);
+            int rc = cfg.cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr);
+            if(rc==0) throw std::runtime_error("from_json error: "+kv.key()+" not in struct "+cfg.getStructName());
         }
     }
 
