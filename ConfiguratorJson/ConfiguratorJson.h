@@ -172,7 +172,7 @@ protected:
     //   pair, various STL containers, and primitives
 
     /// cfgWriteToJsonHelper for descendants of ConfiguratorJson
-    static void cfgWriteToJsonHelper(nlohmann::json& js, ConfiguratorJson& val){
+    static void cfgWriteToJsonHelper(nlohmann::json& js, const ConfiguratorJson& val){
         js = val.to_json();
     }
 
@@ -180,6 +180,7 @@ protected:
     /// Prints contents of Optional.
     template <typename T>
     static void cfgWriteToJsonHelper(nlohmann::json& js, Optional<T>& val){
+        //TODO: figure why Optional can't be const?
         // shouldn't be able to get this far if not set
         if(!val.isSet()) throw std::runtime_error("cfgWriteToJsonHelper Optional<T>: this shouldn't happen");
         cfgWriteToJsonHelper(js, (T&)val);
@@ -187,23 +188,23 @@ protected:
 
     /// cfgWriteToJsonHelper for vector
     template <typename T>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, std::vector<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJsonHelper(nlohmann::json& js, const std::vector<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
     /// cfgWriteToJsonHelper for array
     template <typename T, size_t N>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, std::array<T, N>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJsonHelper(nlohmann::json& js, const std::array<T, N>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
     /// cfgWriteToJsonHelper for set
     template <typename T>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, std::set<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJsonHelper(nlohmann::json& js, const std::set<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
     /// cfgWriteToJsonHelper for map
     template <typename T1, typename T2>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, std::map<T1, T2>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJsonHelper(nlohmann::json& js, const std::map<T1, T2>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
     /// cfgWriteToJsonHelper for pair
     template <typename T1, typename T2>
-    static void cfgWriteToJsonHelper(nlohmann::json& js, std::pair<T1, T2>& val) {
+    static void cfgWriteToJsonHelper(nlohmann::json& js, const std::pair<T1, T2>& val) {
         nlohmann::json jkey;
         nlohmann::json jval;
         cfgWriteToJsonHelper(jkey, val.first);
@@ -213,7 +214,7 @@ protected:
 
     /// cfgContainerWriteToJsonHelper for other containers
     template <typename Container>
-    static void cfgContainerWriteToJsonHelper(nlohmann::json& js, Container& container) {
+    static void cfgContainerWriteToJsonHelper(nlohmann::json& js, const Container& container) {
         js = nlohmann::json::array();
         for(auto& val : container) {
             nlohmann::json j;
@@ -226,19 +227,19 @@ protected:
     /// the enable_if is required to prevent it from matching on ConfiguratorJson descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgWriteToJsonHelper(nlohmann::json& js, T& val){
+    cfgWriteToJsonHelper(nlohmann::json& js, const T& val){
         js = val;
     }
 
     /// returns true if optional type and value is set
     template<typename T>
-    static bool cfgIsSetOrNotOptional(Optional<T>& opt){
+    static bool cfgIsSetOrNotOptional(const Optional<T>& opt){
         return opt.isSet();
     }
 
     /// returns true if not instance of Optional<T>
     template<typename T>
-    static bool cfgIsSetOrNotOptional(T& t){
+    static bool cfgIsSetOrNotOptional(const T& t){
         return true;
     }
 
@@ -259,14 +260,14 @@ protected:
 
     // inserting into array by index
     template<typename T, size_t N>
-    static void insert_helper(std::array<T,N>& arr, size_t i, T& val){
+    static void insert_helper(std::array<T,N>& arr, size_t i, const T& val){
         if(i>=N) throw std::range_error("insert exceeds array size");
         arr[i] = val;
     }
 
     // inserting into end of container (ignoring index, but should match anyway)
     template<typename Container, typename T>
-    static void insert_helper(Container& container, size_t i, T& val){
+    static void insert_helper(Container& container, size_t i, const T& val){
         assert(container.size()==i);
         container.insert(container.end(),val);
     }

@@ -59,8 +59,13 @@ public:
 
   // returns reference.  Allocates if necessary
   operator T&(){
-    if(!mpVal) mpVal = new T;
-    return *mpVal;
+      if(!mpVal) mpVal = new T;
+      return *mpVal;
+  }
+
+  operator const T&(){
+      if(mpVal == nullptr) throw std::runtime_error("Optional taking ref of empty Optional");
+      return *mpVal;
   }
 
   // assigns value.  Allocates if necessary
