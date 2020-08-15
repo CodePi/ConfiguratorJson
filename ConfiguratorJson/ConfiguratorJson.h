@@ -155,6 +155,7 @@ protected:
     template <typename T1, typename T2>
     static void cfgSetFromJson(const nlohmann::json& js, std::pair<T1, T2>& val) {
         if(js.size()!=2) throw std::runtime_error("cfgSetFromJson: json pair must be size 2");
+        // Note: the remove_const is needed because map::value_type is pair<const T1, T2>
         cfgSetFromJson(js.at(0), remove_const(val.first));
         cfgSetFromJson(js.at(1), val.second);
     }
@@ -189,6 +190,8 @@ protected:
 
     /// cfgWriteToJson for descendants of ConfiguratorJson
     static void cfgWriteToJson(nlohmann::json& js, const ConfiguratorJson& val){
+        // Note: the remove_const is needed because cfgMultiFunction is non-const,
+        //       but will not modify the object if mfType is CFGJS_WRITE_ALL
         remove_const(val).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &js);
     }
 
