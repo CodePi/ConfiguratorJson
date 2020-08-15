@@ -44,6 +44,7 @@ struct TestConfig : public codepi::ConfiguratorJson{
     codepi::Optional<int> opt1, opt2, opt3;
     codepi::Optional< std::vector<int> > optvec;
     SubConfig2 sc2;
+    std::map<int, string> intstrmap;
 
     CFGJS_HEADER(TestConfig)
     CFGJS_ENTRY2(jjj,12)
@@ -67,6 +68,7 @@ struct TestConfig : public codepi::ConfiguratorJson{
     CFGJS_ENTRY1(opt3)
     CFGJS_ENTRY1(optvec)
     CFGJS_ENTRY1(sc2);
+    CFGJS_ENTRY1(intstrmap)
     CFGJS_TAIL
 };
 
@@ -91,6 +93,7 @@ int main() {
     tc.b = true;
     tc.opt2 = 2;
     tc.optvec = {1,2,3,4,5};
+    tc.intstrmap = {{1,"a"},{2,"b"}};
     string str = tc.to_string();
     cout << str << "\n";
 
