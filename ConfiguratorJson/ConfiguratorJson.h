@@ -15,6 +15,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+//TODO: option to check for key not in struct.  It was lost in translation.
+
 #pragma once
 
 #include <vector>
