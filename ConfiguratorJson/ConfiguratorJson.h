@@ -54,7 +54,7 @@ public:
     }
 
     // deserialize from json
-    void from_json(nlohmann::json& js){
+    void from_json(const nlohmann::json& js){
         for(auto& kv : js.items()){
             cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr, nullptr);
         }
@@ -92,7 +92,7 @@ protected:
     ///   This method is automatically generated in subclass using macros below
     ///   Returns the number of variables matched
     virtual int cfgMultiFunction(MFType mfType, const std::string* str,
-                                 nlohmann::json* jsonIn, nlohmann::json* jsonOut,
+                                 const nlohmann::json* jsonIn, nlohmann::json* jsonOut,
                                  ConfiguratorJson* other)=0;
 
     /// returns default value of type T
@@ -109,35 +109,35 @@ protected:
     //   pair, various STL containers, and primitives
 
     /// cfgSetFromJson for descendants of ConfiguratorJson
-    static void cfgSetFromJson(nlohmann::json& js, ConfiguratorJson& cfg){
+    static void cfgSetFromJson(const nlohmann::json& js, ConfiguratorJson& cfg){
         cfg.from_json(js);
     }
 
     /// cfgSetFromJson for Optional<T>
     template <typename T>
-    static void cfgSetFromJson(nlohmann::json& js, Optional<T>& val){
+    static void cfgSetFromJson(const nlohmann::json& js, Optional<T>& val){
         cfgSetFromJson(js, (T&)val);
     }
 
     /// cfgSetFromJson for vector
     template <typename T>
-    static void cfgSetFromJson(nlohmann::json& js, std::vector<T>& val) { cfgContainerSetFromJson(js, val); }
+    static void cfgSetFromJson(const nlohmann::json& js, std::vector<T>& val) { cfgContainerSetFromJson(js, val); }
 
     /// cfgSetFromJson for array
     template <typename T, size_t N>
-    static void cfgSetFromJson(nlohmann::json& js, std::array<T, N>& val) { cfgContainerSetFromJson(js, val); }
+    static void cfgSetFromJson(const nlohmann::json& js, std::array<T, N>& val) { cfgContainerSetFromJson(js, val); }
 
     /// cfgSetFromJson for set
     template <typename T>
-    static void cfgSetFromJson(nlohmann::json& js, std::set<T>& val) { cfgContainerSetFromJson(js, val); }
+    static void cfgSetFromJson(const nlohmann::json& js, std::set<T>& val) { cfgContainerSetFromJson(js, val); }
 
     /// cfgSetFromJson for map
     template <typename T1, typename T2>
-    static void cfgSetFromJson(nlohmann::json& js, std::map<T1, T2>& val) { cfgContainerSetFromJson(js, val); }
+    static void cfgSetFromJson(const nlohmann::json& js, std::map<T1, T2>& val) { cfgContainerSetFromJson(js, val); }
 
     /// cfgSetFromJson for pair
     template <typename T1, typename T2>
-    static void cfgSetFromJson(nlohmann::json& js, std::pair<T1, T2>& val) {
+    static void cfgSetFromJson(const nlohmann::json& js, std::pair<T1, T2>& val) {
         assert(js.size()==2);
         cfgSetFromJson(js.at(0), remove_const(val.first));
         cfgSetFromJson(js.at(1), val.second);
@@ -146,7 +146,7 @@ protected:
 
     /// cfgContainerSetFromJson helper function for other containers
     template <typename Container>
-    static void cfgContainerSetFromJson(nlohmann::json& js, Container& container) {
+    static void cfgContainerSetFromJson(const nlohmann::json& js, Container& container) {
         clear_helper(container);
         int i=0;
         for(nlohmann::json jval : js) {
@@ -161,7 +161,7 @@ protected:
     /// the enable_if is required to prevent it from matching on ConfiguratorJson descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgSetFromJson(nlohmann::json& js, T& val){
+    cfgSetFromJson(const nlohmann::json& js, T& val){
         val = js.get<T>();
     }
 
@@ -289,7 +289,7 @@ protected:
   structName() { cfgMultiFunction(CFGJS_INIT_ALL,nullptr,nullptr,nullptr,nullptr); } \
   std::string getStructName() { return #structName; } \
   int cfgMultiFunction(MFType mfType, const std::string* str, \
-    nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
+    const nlohmann::json* jsonIn, nlohmann::json* jsonOut,ConfiguratorJson*other){ \
     int retVal=0; \
     structName* otherPtr;
 
