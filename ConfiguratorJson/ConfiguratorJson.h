@@ -166,7 +166,7 @@ protected:
         for(nlohmann::json jval : js) {
             typename Container::value_type val;
             cfgSetFromJson(jval,val);
-            insert_helper(container, i, val);
+            insert_helper(container, i, std::move(val));
             i++;
         }
     }
@@ -283,17 +283,17 @@ protected:
     }
 
     // inserting into array by index
-    template<typename T, size_t N>
-    static void insert_helper(std::array<T,N>& arr, size_t i, const T& val){
+    template<typename T, size_t N, typename U>
+    static void insert_helper(std::array<T,N>& arr, size_t i, U&& val){
         if(i>=N) throw std::range_error("insert exceeds array size");
-        arr[i] = val;
+        arr[i] = std::forward<U>(val);
     }
 
     // inserting into end of container (ignoring index, but should match anyway)
-    template<typename Container, typename T>
-    static void insert_helper(Container& container, size_t i, const T& val){
+    template<typename Container, typename U>
+    static void insert_helper(Container& container, size_t i, U&& val){
         if(container.size()!=i) throw std::runtime_error("insert_helper: insert_helper improperly used");
-        container.insert(container.end(),val);
+        container.insert(container.end(),std::forward<U>(val));
     }
 
     /// helper function for cfgSetFromStream for pairs
