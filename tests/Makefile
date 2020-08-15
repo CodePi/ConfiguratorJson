@@ -4,7 +4,7 @@ TESTS = TestConfig TestConfig2 TestConfig3 testOptional
 all : $(TESTS)
 
 % : %.cpp $(HDR)
-	g++ -o $@ $<
+	g++ -Wall -Werror -o $@ $<
 
 clean:
 	rm $(TESTS)

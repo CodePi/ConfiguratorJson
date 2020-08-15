@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(ConfiguratorJson)
+add_compile_options(-Wall -Werror)
 
 set(CMAKE_CXX_STANDARD 11)
 

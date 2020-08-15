@@ -291,8 +291,7 @@ protected:
   std::string getStructName() const { return #structName; } \
   int cfgMultiFunction(MFType mfType, const std::string* str, \
     const nlohmann::json* jsonIn, nlohmann::json* jsonOut){ \
-    int retVal=0; \
-    structName* otherPtr;
+    int retVal=0;
 
 // continues cfgMultiFunction method, called for each member variable in struct 
 #define CFGJS_ENTRY2(varName, defaultVal) \
