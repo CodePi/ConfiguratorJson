@@ -43,7 +43,9 @@ public:
         return to_json().dump(indent);
     }
     void to_stream(std::ostream& os, int indent=-1) const{
-        os << std::setw(indent) << to_json();
+        auto oldwidth = os.width(indent);
+        os << to_json();
+        os.width(oldwidth);
     }
     void to_file(const std::string& fname, int indent=-1) const{
         std::ofstream ofs(fname);
