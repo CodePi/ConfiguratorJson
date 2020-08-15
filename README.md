@@ -44,6 +44,7 @@ int main(){
   cout << config2b.to_string() << endl;
 }
 ```
+See tests directory for more examples.
 
 #### Corresponding serialization
 ```
