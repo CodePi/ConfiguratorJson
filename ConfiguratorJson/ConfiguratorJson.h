@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include "json.hpp"
 #include <vector>
 #include <map>
 #include <set>
@@ -25,6 +24,8 @@
 #include <string>
 #include <fstream>
 #include <iomanip>
+
+#include "json.hpp"
 #include "Optional.h"
 
 namespace codepi{
@@ -137,7 +138,7 @@ protected:
     /// cfgSetFromJson for pair
     template <typename T1, typename T2>
     static void cfgSetFromJson(const nlohmann::json& js, std::pair<T1, T2>& val) {
-        assert(js.size()==2);
+        if(js.size()!=2) throw std::runtime_error("cfgSetFromJson: json pair must be size 2");
         cfgSetFromJson(js.at(0), remove_const(val.first));
         cfgSetFromJson(js.at(1), val.second);
     }
@@ -268,7 +269,7 @@ protected:
     // inserting into end of container (ignoring index, but should match anyway)
     template<typename Container, typename T>
     static void insert_helper(Container& container, size_t i, const T& val){
-        assert(container.size()==i);
+        if(container.size()!=i) throw std::runtime_error("insert_helper: insert_helper improperly used");
         container.insert(container.end(),val);
     }
 
