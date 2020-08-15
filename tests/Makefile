@@ -1,7 +1,10 @@
 HDR = ../ConfiguratorJson/ConfiguratorJson.h ../ConfiguratorJson/Optional.h ../ConfiguratorJson/json.hpp
+TESTS = TestConfig TestConfig2 TestConfig3 testOptional
 
-test_ConfiguratorJson1 : main.cpp $(HDR)
+all : $(TESTS)
+
+% : %.cpp $(HDR)
 	g++ -o $@ $<
 
 clean:
-	rm test_ConfiguratorJson1
+	rm $(TESTS)

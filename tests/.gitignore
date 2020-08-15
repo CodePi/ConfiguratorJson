@@ -1,4 +1,8 @@
 cmake-build-*/
 build/
 *~
-test_ConfiguratorJson1
+TestConfig
+TestConfig2
+TestConfig3
+testOptional
+file3.txt

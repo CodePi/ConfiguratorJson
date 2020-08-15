@@ -101,4 +101,6 @@ int main() {
 
     vector<uint8_t> bson = tc2.to_bson();
     cout << bson.size() << "\n";
+
+    return 0;
 }
