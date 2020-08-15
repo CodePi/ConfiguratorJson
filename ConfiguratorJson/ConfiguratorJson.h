@@ -34,9 +34,9 @@ public:
 
     // serialize to json
     nlohmann::json to_json() const{
-        nlohmann::json j;
-        remove_const(*this).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &j);
-        return j;
+        nlohmann::json js;
+        cfgWriteToJsonHelper(js, *this);
+        return js;
     }
     std::string to_string(int indent=-1) const{
         return to_json().dump(indent);
@@ -55,9 +55,7 @@ public:
 
     // deserialize from json
     void from_json(const nlohmann::json& js){
-        for(auto& kv : js.items()){
-            cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr);
-        }
+        cfgSetFromJson(js, *this);
     }
     void from_string(const std::string& str) {
         nlohmann::json js = nlohmann::json::parse(str);
@@ -109,7 +107,9 @@ protected:
 
     /// cfgSetFromJson for descendants of ConfiguratorJson
     static void cfgSetFromJson(const nlohmann::json& js, ConfiguratorJson& cfg){
-        cfg.from_json(js);
+        for(auto& kv : js.items()){
+            cfg.cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr);
+        }
     }
 
     /// cfgSetFromJson for Optional<T>
@@ -173,7 +173,7 @@ protected:
 
     /// cfgWriteToJsonHelper for descendants of ConfiguratorJson
     static void cfgWriteToJsonHelper(nlohmann::json& js, const ConfiguratorJson& val){
-        js = val.to_json();
+        remove_const(val).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &js);
     }
 
     /// cfgWriteToJsonHelper for Optional<T>
