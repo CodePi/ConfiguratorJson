@@ -1,5 +1,7 @@
 # ConfiguratorJson
-Hierarchical C++ struct human readable serializer/deserializer.  Originally made for configuration file reading/writing.
+Header only hierarchical C++ struct human readable serializer/deserializer.  Originally made for configuration file reading/writing.
+
+Tested with g++ 4.8 through 10 and clang++ 
 
 ### Example usage
 ``` cpp
