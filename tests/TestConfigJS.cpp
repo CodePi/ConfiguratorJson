@@ -50,8 +50,9 @@ struct TestConfig : public codepi::ConfiguratorJson{
     CFGJS_ENTRY_DEF(jjj,12)
     CFGJS_ENTRY_DEF(n,"hello")
     CFGJS_MULTIENTRY10(k,arr,intSet,pair,pair2,map,n,s,u,subvec)
-    CFGJS_MULTIENTRY10(subarr,subset,submap,strList,b,opt1,opt2,opt3,optvec,sc2)
-    CFGJS_MULTIENTRY1(intstrmap)
+    CFGJS_MULTIENTRY5(subarr,subset,submap,strList,b)
+    //TODO: CFGJS_MULTIENTRY4(opt1,opt2,opt3,optvec)
+    CFGJS_MULTIENTRY2(sc2, intstrmap)
     CFGJS_TAIL
 };
 

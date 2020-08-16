@@ -17,6 +17,8 @@
 
 #pragma once
 
+//TODO: add support for optional back in and removed unused methods
+
 #include <vector>
 #include <map>
 #include <set>
@@ -29,6 +31,19 @@
 #include "Optional.h"
 
 namespace codepi{
+
+// helper functions to workaround naming collision issues
+template <typename T>
+void from_json_helper(const nlohmann::ordered_json& js, T& val) {
+    using namespace nlohmann;
+    from_json(js, val);
+}
+
+template <typename T>
+void to_json_helper(nlohmann::ordered_json& js, const T& val) {
+    using namespace nlohmann;
+    to_json(js, val);
+}
 
 class ConfiguratorJson{
 public:
@@ -128,19 +143,6 @@ protected:
         }
     }
 
-    /// cfgSetFromJson for Optional<T>
-    template <typename T>
-    static void cfgSetFromJson(const nlohmann::ordered_json& js, Optional<T>& val){
-        cfgSetFromJson(js, (T&)val);
-    }
-
-    /// cfgSetFromJson for all other types
-    /// the enable_if is required to prevent it from matching on ConfiguratorJson descendants
-    template <typename T>
-    static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgSetFromJson(const nlohmann::ordered_json& js, T& val){
-        val = js.get<T>();
-    }
     //////////////////////////////////////////////////////////////////
     // cfgWriteToJson(json, val)
     // Used internally by cfgMultiFunction
@@ -153,22 +155,6 @@ protected:
         // Note: the remove_const is needed because cfgMultiFunction is non-const,
         //       but will not modify the object if mfType is CFGJS_WRITE_ALL
         remove_const(val).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &js);
-    }
-
-    /// cfgWriteToJson for Optional<T>
-    /// Prints contents of Optional.
-    template <typename T>
-    static void cfgWriteToJson(nlohmann::ordered_json& js, const Optional<T>& val){
-        if(!val.isSet()) throw std::runtime_error("cfgWriteToJson Optional<T>: this shouldn't happen");
-        cfgWriteToJson(js, (const T&)val);
-    }
-
-    /// cfgWriteToJson for all other types
-    /// the enable_if is required to prevent it from matching on ConfiguratorJson descendants
-    template <typename T>
-    static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgWriteToJson(nlohmann::ordered_json& js, const T& val){
-        js = val;
     }
 
     /// returns true if optional type and value is set
@@ -211,11 +197,11 @@ protected:
 #define CFGJS_ENTRY_DEF(varName, defaultVal) \
   if(mfType==CFGJS_INIT_ALL) { \
     if(cfgIsSetOrNotOptional(varName)) {varName = defaultVal;retVal++;} \
-    } else if(mfType==CFGJS_SET && #varName==*str) { cfgSetFromJson(*jsonIn,varName);retVal++;} \
+    } else if(mfType==CFGJS_SET && #varName==*str) { from_json_helper(*jsonIn,varName);retVal++;} \
   else if(mfType==CFGJS_WRITE_ALL) { \
     if(cfgIsSetOrNotOptional(varName)) { \
       nlohmann::ordered_json jsonTmp;                    \
-      cfgWriteToJson(jsonTmp,varName);    \
+      to_json_helper(jsonTmp,varName);    \
       (*jsonOut)[#varName] = std::move(jsonTmp); retVal++; \
     } \
   }
