@@ -30,33 +30,6 @@
 
 namespace codepi{
 
-template <typename T>
-void from_json(const nlohmann::ordered_json& js, Optional<T>& val) {
-    using nlohmann::from_json;
-    if(js.empty()) val.unset();
-    else from_json(js, (T&)val);
-}
-
-template <typename T>
-void to_json(nlohmann::ordered_json& js, const Optional<T>& val) {
-    using nlohmann::to_json;
-    if(val.isSet()) js = val.get();
-    else js={};
-}
-
-// helper functions to workaround naming collision issues
-template <typename T>
-void from_json_helper(const nlohmann::ordered_json& js, T& val) {
-    using nlohmann::from_json;
-    from_json(js, val);
-}
-
-template <typename T>
-void to_json_helper(nlohmann::ordered_json& js, const T& val) {
-    using nlohmann::to_json;
-    to_json(js, val);
-}
-
 class ConfiguratorJson{
 public:
 
@@ -163,6 +136,22 @@ protected:
     }
 };
 
+// from_json for Optional class
+template <typename T>
+void from_json(const nlohmann::ordered_json& js, Optional<T>& val) {
+    using nlohmann::from_json;
+    if(js.empty()) val.unset();
+    else from_json(js, (T&)val);
+}
+
+// to_json for Optional class
+template <typename T>
+void to_json(nlohmann::ordered_json& js, const Optional<T>& val) {
+    using nlohmann::to_json;
+    if(val.isSet()) js = val.get();
+    else js={};
+}
+
 //////////////////////////////////////////////////////////////////
 // Macros to automatically generate the cfgMultiFunction method in
 // descendant classes.
@@ -173,23 +162,26 @@ protected:
   CFGJS_HEADER_NO_CTOR(structName)
 
 // same as CFGJS_HEADER, but without generating a constructor
-#define CFGJS_HEADER_NO_CTOR(structName) \
-  std::string getStructName() const { return #structName; } \
-  int cfgMultiFunction(MFType mfType, const std::string* str, \
+#define CFGJS_HEADER_NO_CTOR(structName)                                    \
+  std::string getStructName() const { return #structName; }                 \
+  int cfgMultiFunction(MFType mfType, const std::string* str,               \
     const nlohmann::ordered_json* jsonIn, nlohmann::ordered_json* jsonOut){ \
-    int retVal=0;
+      using nlohmann::to_json;                                              \
+      using nlohmann::from_json;                                            \
+      int retVal=0;
 
 // continues cfgMultiFunction method, called for each member variable in struct 
-#define CFGJS_ENTRY_DEF(varName, defaultVal) \
-  if(mfType==CFGJS_INIT_ALL) { \
-    if(cfgIsSetOrNotOptional(varName)) {varName = defaultVal;retVal++;} \
-    } else if(mfType==CFGJS_SET && #varName==*str) { from_json_helper(*jsonIn,varName);retVal++;} \
-  else if(mfType==CFGJS_WRITE_ALL) { \
-    if(cfgIsSetOrNotOptional(varName)) { \
-      nlohmann::ordered_json jsonTmp;                    \
-      to_json_helper(jsonTmp,varName);    \
-      (*jsonOut)[#varName] = std::move(jsonTmp); retVal++; \
-    } \
+#define CFGJS_ENTRY_DEF(varName, defaultVal)                                \
+  if(mfType==CFGJS_INIT_ALL) {                                              \
+    if(cfgIsSetOrNotOptional(varName)) { varName = defaultVal;retVal++; }   \
+  } else if(mfType==CFGJS_SET && #varName==*str) {                          \
+    from_json(*jsonIn,varName);retVal++;                                    \
+  } else if(mfType==CFGJS_WRITE_ALL) {                                      \
+    if(cfgIsSetOrNotOptional(varName)) {                                    \
+      nlohmann::ordered_json jsonTmp;                                       \
+      to_json(jsonTmp,varName);                                             \
+      (*jsonOut)[#varName] = std::move(jsonTmp); retVal++;                  \
+    }                                                                       \
   }
 
 // alternative to CFGJS_ENTRY_DEF used when default defaultVal is sufficient
