@@ -171,17 +171,17 @@ void to_json(nlohmann::ordered_json& js, const Optional<T>& val) {
       int retVal=0;
 
 // continues cfgMultiFunction method, called for each member variable in struct 
-#define CFGJS_ENTRY_DEF(varName, defaultVal)                                \
-  if(mfType==CFGJS_INIT_ALL) {                                              \
-    if(cfgIsSetOrNotOptional(varName)) { varName = defaultVal;retVal++; }   \
-  } else if(mfType==CFGJS_SET && #varName==*str) {                          \
-    from_json(*jsonIn,varName);retVal++;                                    \
-  } else if(mfType==CFGJS_WRITE_ALL) {                                      \
-    if(cfgIsSetOrNotOptional(varName)) {                                    \
-      nlohmann::ordered_json jsonTmp;                                       \
-      to_json(jsonTmp,varName);                                             \
-      (*jsonOut)[#varName] = std::move(jsonTmp); retVal++;                  \
-    }                                                                       \
+#define CFGJS_ENTRY_DEF(varName, defaultVal)                                         \
+  if(mfType==CFGJS_INIT_ALL) {                                                       \
+    if(cfgIsSetOrNotOptional(varName)) {                                             \
+      varName = defaultVal; retVal++;                                                \
+    }                                                                                \
+  } else if(mfType==CFGJS_SET && #varName==*str) {                                   \
+    jsonIn->get_to(varName); retVal++;                                               \
+  } else if(mfType==CFGJS_WRITE_ALL) {                                               \
+    if(cfgIsSetOrNotOptional(varName)) {                                             \
+      (*jsonOut)[#varName] = varName; retVal++;                                      \
+    }                                                                                \
   }
 
 // alternative to CFGJS_ENTRY_DEF used when default defaultVal is sufficient
