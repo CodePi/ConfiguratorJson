@@ -332,7 +332,7 @@ protected:
     int retVal=0;
 
 // continues cfgMultiFunction method, called for each member variable in struct 
-#define CFGJS_ENTRY2(varName, defaultVal) \
+#define CFGJS_ENTRY_DEF(varName, defaultVal) \
   if(mfType==CFGJS_INIT_ALL) { \
     if(cfgIsSetOrNotOptional(varName)) {varName = defaultVal;retVal++;} \
     } else if(mfType==CFGJS_SET && #varName==*str) { cfgSetFromJson(*jsonIn,varName);retVal++;} \
@@ -344,8 +344,8 @@ protected:
     } \
   }
 
-// alternative to CFGJS_ENTRY2 used when default defaultVal is sufficient
-#define CFGJS_ENTRY1(varName) CFGJS_ENTRY2(varName, cfgGetDefaultVal(varName))
+// alternative to CFGJS_ENTRY_DEF used when default defaultVal is sufficient
+#define CFGJS_ENTRY(varName) CFGJS_ENTRY_DEF(varName, cfgGetDefaultVal(varName))
 
 // calls cfgMultiFunction method of parent
 // allows for inheritance
@@ -355,5 +355,17 @@ protected:
 
 // closes out cfgMultiFunction method
 #define CFGJS_TAIL return retVal; }
+
+// multientry
+#define CFGJS_MULTIENTRY1(v1)                              CFGJS_ENTRY(v1)
+#define CFGJS_MULTIENTRY2(v1,v2)                           CFGJS_ENTRY(v1) CFGJS_MULTIENTRY1(v2)
+#define CFGJS_MULTIENTRY3(v1,v2,v3)                        CFGJS_ENTRY(v1) CFGJS_MULTIENTRY2(v2,v3)
+#define CFGJS_MULTIENTRY4(v1,v2,v3,v4)                     CFGJS_ENTRY(v1) CFGJS_MULTIENTRY3(v2,v3,v4)
+#define CFGJS_MULTIENTRY5(v1,v2,v3,v4,v5)                  CFGJS_ENTRY(v1) CFGJS_MULTIENTRY4(v2,v3,v4,v5)
+#define CFGJS_MULTIENTRY6(v1,v2,v3,v4,v5,v6)               CFGJS_ENTRY(v1) CFGJS_MULTIENTRY5(v2,v3,v4,v5,v6)
+#define CFGJS_MULTIENTRY7(v1,v2,v3,v4,v5,v6,v7)            CFGJS_ENTRY(v1) CFGJS_MULTIENTRY6(v2,v3,v4,v5,v6,v7)
+#define CFGJS_MULTIENTRY8(v1,v2,v3,v4,v5,v6,v7,v8)         CFGJS_ENTRY(v1) CFGJS_MULTIENTRY7(v2,v3,v4,v5,v6,v7,v8)
+#define CFGJS_MULTIENTRY9(v1,v2,v3,v4,v5,v6,v7,v8,v9)      CFGJS_ENTRY(v1) CFGJS_MULTIENTRY8(v2,v3,v4,v5,v6,v7,v8,v9)
+#define CFGJS_MULTIENTRY10(v1,v2,v3,v4,v5,v6,v7,v8,v9,v10) CFGJS_ENTRY(v1) CFGJS_MULTIENTRY9(v2,v3,v4,v5,v6,v7,v8,v9,v10)
 
 }  //namespace codepi

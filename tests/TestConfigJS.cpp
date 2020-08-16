@@ -9,7 +9,7 @@ struct SubConfig2:public codepi::ConfiguratorJson{
     int k;
 
     CFGJS_HEADER(SubConfig2)
-    CFGJS_ENTRY2(k,9)
+    CFGJS_ENTRY_DEF(k,9)
     CFGJS_TAIL
 };
 
@@ -17,8 +17,8 @@ struct SubConfig1:public SubConfig2{
     int i,j;
 
     CFGJS_HEADER(SubConfig1)
-    CFGJS_ENTRY2(i,7)
-    CFGJS_ENTRY1(j)
+    CFGJS_ENTRY_DEF(i,7)
+    CFGJS_ENTRY(j)
     CFGJS_PARENT(SubConfig2)
     CFGJS_TAIL
 };
@@ -47,28 +47,9 @@ struct TestConfig : public codepi::ConfiguratorJson{
     std::map<int, string> intstrmap;
 
     CFGJS_HEADER(TestConfig)
-    CFGJS_ENTRY2(jjj,12)
-    CFGJS_ENTRY1(k)
-    CFGJS_ENTRY1(arr)
-    CFGJS_ENTRY1(intSet)
-    CFGJS_ENTRY1(pair)
-    CFGJS_ENTRY1(pair2)
-    CFGJS_ENTRY1(map)
-    CFGJS_ENTRY2(n,"hello")
-    CFGJS_ENTRY1(s)
-    CFGJS_ENTRY1(u)
-    CFGJS_ENTRY1(subvec)
-    CFGJS_ENTRY1(subarr)
-    CFGJS_ENTRY1(subset)
-    CFGJS_ENTRY1(submap)
-    CFGJS_ENTRY1(strList)
-    CFGJS_ENTRY1(b)
-    CFGJS_ENTRY1(opt1)
-    CFGJS_ENTRY1(opt2)
-    CFGJS_ENTRY1(opt3)
-    CFGJS_ENTRY1(optvec)
-    CFGJS_ENTRY1(sc2);
-    CFGJS_ENTRY1(intstrmap)
+    CFGJS_MULTIENTRY10(jjj,k,arr,intSet,pair,pair2,map,n,s,u)
+    CFGJS_MULTIENTRY10(subvec,subarr,subset,submap,strList,b,opt1,opt2,opt3,optvec)
+    CFGJS_MULTIENTRY2(sc2,intstrmap)
     CFGJS_TAIL
 };
 

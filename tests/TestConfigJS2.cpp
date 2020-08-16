@@ -1,6 +1,8 @@
 #include "../ConfiguratorJson/ConfiguratorJson.h"
 #include <iostream>
 
+// example using inheritance to wrap an existing class
+
 using namespace std;
 using namespace codepi;
 
@@ -17,9 +19,7 @@ struct StructConfig :public Struct, public ConfiguratorJson {
   }
 
   CFGJS_HEADER(StructConfig)
-  CFGJS_ENTRY1(a)
-  CFGJS_ENTRY1(b)
-  CFGJS_ENTRY1(c)
+  CFGJS_MULTIENTRY3(a,b,c)
   CFGJS_TAIL
 };
 

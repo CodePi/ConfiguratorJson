@@ -11,13 +11,16 @@ struct Config1 : public ConfiguratorJson {
   string exampleString;
   vector<int> exampleVector;
   map<string, int> exampleMap;
+  int i,j,k;
+  float x,y,z;
 
   CFGJS_HEADER(Config1)
-  CFGJS_ENTRY2(exampleIntValue, 12)
-  CFGJS_ENTRY1(exampleFloat)
-  CFGJS_ENTRY2(exampleString, "initial value")
-  CFGJS_ENTRY1(exampleVector)
-  CFGJS_ENTRY1(exampleMap)
+  CFGJS_ENTRY_DEF(exampleIntValue, 12)  // entry with explicit default value
+  CFGJS_ENTRY(exampleFloat)             // entry with auto default value for type
+  CFGJS_ENTRY_DEF(exampleString, "initial value")
+  CFGJS_ENTRY(exampleVector)
+  CFGJS_ENTRY(exampleMap)
+  CFGJS_MULTIENTRY6(i,j,k,x,y,z) // multiple entries with auto default value
   CFGJS_TAIL
 };
 
@@ -26,8 +29,8 @@ struct Config2 : public ConfiguratorJson {
   int anotherInt;
 
   CFGJS_HEADER(Config2)
-  CFGJS_ENTRY1(exampleSub)
-  CFGJS_ENTRY1(anotherInt)
+  CFGJS_ENTRY(exampleSub)
+  CFGJS_ENTRY(anotherInt)
   CFGJS_TAIL
 };
 
