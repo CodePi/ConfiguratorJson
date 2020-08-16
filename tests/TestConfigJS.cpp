@@ -26,13 +26,13 @@ struct SubConfig1:public SubConfig2{
 struct TestConfig : public codepi::ConfiguratorJson{
 
     int jjj;
+    std::string n;
     std::vector<int> k;
     std::array<int,10> arr;
     std::set<int> intSet;
     std::pair<int, std::string> pair;
     std::pair<std::string, float> pair2;
     std::map<std::string, int> map;
-    std::string n;
     SubConfig1 s;
     SubConfig1 u;
     std::vector<SubConfig1> subvec;
@@ -47,9 +47,11 @@ struct TestConfig : public codepi::ConfiguratorJson{
     std::map<int, string> intstrmap;
 
     CFGJS_HEADER(TestConfig)
-    CFGJS_MULTIENTRY10(jjj,k,arr,intSet,pair,pair2,map,n,s,u)
-    CFGJS_MULTIENTRY10(subvec,subarr,subset,submap,strList,b,opt1,opt2,opt3,optvec)
-    CFGJS_MULTIENTRY2(sc2,intstrmap)
+    CFGJS_ENTRY_DEF(jjj,12)
+    CFGJS_ENTRY_DEF(n,"hello")
+    CFGJS_MULTIENTRY10(k,arr,intSet,pair,pair2,map,n,s,u,subvec)
+    CFGJS_MULTIENTRY10(subarr,subset,submap,strList,b,opt1,opt2,opt3,optvec,sc2)
+    CFGJS_MULTIENTRY1(intstrmap)
     CFGJS_TAIL
 };
 

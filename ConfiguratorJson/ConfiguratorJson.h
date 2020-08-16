@@ -347,15 +347,6 @@ protected:
 // alternative to CFGJS_ENTRY_DEF used when default defaultVal is sufficient
 #define CFGJS_ENTRY(varName) CFGJS_ENTRY_DEF(varName, cfgGetDefaultVal(varName))
 
-// calls cfgMultiFunction method of parent
-// allows for inheritance
-#define CFGJS_PARENT(parentName) \
-  int rc=parentName::cfgMultiFunction(mfType,str,jsonIn,jsonOut); \
-  retVal+=rc;
-
-// closes out cfgMultiFunction method
-#define CFGJS_TAIL return retVal; }
-
 // multientry
 #define CFGJS_MULTIENTRY1(v1)                              CFGJS_ENTRY(v1)
 #define CFGJS_MULTIENTRY2(v1,v2)                           CFGJS_ENTRY(v1) CFGJS_MULTIENTRY1(v2)
@@ -367,5 +358,14 @@ protected:
 #define CFGJS_MULTIENTRY8(v1,v2,v3,v4,v5,v6,v7,v8)         CFGJS_ENTRY(v1) CFGJS_MULTIENTRY7(v2,v3,v4,v5,v6,v7,v8)
 #define CFGJS_MULTIENTRY9(v1,v2,v3,v4,v5,v6,v7,v8,v9)      CFGJS_ENTRY(v1) CFGJS_MULTIENTRY8(v2,v3,v4,v5,v6,v7,v8,v9)
 #define CFGJS_MULTIENTRY10(v1,v2,v3,v4,v5,v6,v7,v8,v9,v10) CFGJS_ENTRY(v1) CFGJS_MULTIENTRY9(v2,v3,v4,v5,v6,v7,v8,v9,v10)
+
+// calls cfgMultiFunction method of parent
+// allows for inheritance
+#define CFGJS_PARENT(parentName) \
+  int rc=parentName::cfgMultiFunction(mfType,str,jsonIn,jsonOut); \
+  retVal+=rc;
+
+// closes out cfgMultiFunction method
+#define CFGJS_TAIL return retVal; }
 
 }  //namespace codepi
