@@ -183,35 +183,6 @@ protected:
         return true;
     }
 
-    //////////////////////////////
-    // Helper function to distinguish between stl arrays and other containers
-
-    // clear array by filling it with default values
-    template<typename T, size_t N>
-    static void clear_helper(std::array<T,N>& arr){
-        arr.fill(T());
-    }
-
-    // clear container
-    template<typename Container>
-    static void clear_helper(Container& container){
-        container.clear();
-    }
-
-    // inserting into array by index
-    template<typename T, size_t N, typename U>
-    static void insert_helper(std::array<T,N>& arr, size_t i, U&& val){
-        if(i>=N) throw std::range_error("insert exceeds array size");
-        arr[i] = std::forward<U>(val);
-    }
-
-    // inserting into end of container (ignoring index, but should match anyway)
-    template<typename Container, typename U>
-    static void insert_helper(Container& container, size_t i, U&& val){
-        if(container.size()!=i) throw std::runtime_error("insert_helper: insert_helper improperly used");
-        container.insert(container.end(),std::forward<U>(val));
-    }
-
     /// helper function for cfgSetFromJson for pairs
     /// workaround: a map's value_type is pair<const T1, T2> this casts off the const
     template <typename T>
