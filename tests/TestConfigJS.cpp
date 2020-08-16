@@ -43,6 +43,7 @@ struct TestConfig : public codepi::ConfiguratorJson{
     bool b;
     codepi::Optional<int> opt1, opt2, opt3;
     codepi::Optional< std::vector<int> > optvec;
+    codepi::Optional<SubConfig1> optsc1;
     SubConfig2 sc2;
     std::map<int, string> intstrmap;
 
@@ -51,7 +52,7 @@ struct TestConfig : public codepi::ConfiguratorJson{
     CFGJS_ENTRY_DEF(n,"hello")
     CFGJS_MULTIENTRY10(k,arr,intSet,pair,pair2,map,n,s,u,subvec)
     CFGJS_MULTIENTRY5(subarr,subset,submap,strList,b)
-    //TODO: CFGJS_MULTIENTRY4(opt1,opt2,opt3,optvec)
+    CFGJS_MULTIENTRY5(opt1,opt2,opt3,optvec,optsc1)
     CFGJS_MULTIENTRY2(sc2, intstrmap)
     CFGJS_TAIL
 };
@@ -77,6 +78,7 @@ int main() {
     tc.b = true;
     tc.opt2 = 2;
     tc.optvec = {1,2,3,4,5};
+    tc.optsc1 = tc.s;
     tc.intstrmap = {{1,"a"},{2,"b"}};
     string str = tc.to_string();
     cout << str << "\n";

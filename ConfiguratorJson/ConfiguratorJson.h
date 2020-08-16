@@ -17,8 +17,6 @@
 
 #pragma once
 
-//TODO: add support for optional back in and removed unused methods
-
 #include <vector>
 #include <map>
 #include <set>
@@ -32,16 +30,30 @@
 
 namespace codepi{
 
+template <typename T>
+void from_json(const nlohmann::ordered_json& js, Optional<T>& val) {
+    using nlohmann::from_json;
+    if(js.empty()) val.unset();
+    else from_json(js, (T&)val);
+}
+
+template <typename T>
+void to_json(nlohmann::ordered_json& js, const Optional<T>& val) {
+    using nlohmann::to_json;
+    if(val.isSet()) js = val.get();
+    else js={};
+}
+
 // helper functions to workaround naming collision issues
 template <typename T>
 void from_json_helper(const nlohmann::ordered_json& js, T& val) {
-    using namespace nlohmann;
+    using nlohmann::from_json;
     from_json(js, val);
 }
 
 template <typename T>
 void to_json_helper(nlohmann::ordered_json& js, const T& val) {
-    using namespace nlohmann;
+    using nlohmann::to_json;
     to_json(js, val);
 }
 
