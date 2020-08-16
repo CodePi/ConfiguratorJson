@@ -36,7 +36,7 @@ public:
     /// serialize to json (string, stream, file, or bson)
     nlohmann::ordered_json to_json() const{
         nlohmann::ordered_json js;
-        remove_const(*this).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &js);
+        const_cast<ConfiguratorJson*>(this)->cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &js);
         return js;
     }
     std::string to_string(int indent=-1) const{
@@ -128,12 +128,6 @@ protected:
         return true;
     }
 
-    /// helper function for cfgSetFromJson for pairs
-    /// workaround: a map's value_type is pair<const T1, T2> this casts off the const
-    template <typename T>
-    static T& remove_const(const T& val){
-        return const_cast<T&>(val);
-    }
 };
 
 // from_json for Optional class
