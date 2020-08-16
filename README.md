@@ -70,16 +70,18 @@ See tests directory for more examples.
 ``` cpp
 class ConfiguratorJson{
 public:
-  /// read and parse file / stream / string
+  /// serialize to json (string, stream, file, or bson)
   nlohmann::ordered_json to_json();
   std::string to_string(int indent=-1);
   void to_stream(std::ostream& os, int indent=-1);
   void to_file(const std::string& fname, int indent=-1);
   std::vector<uint8_t> to_bson();
 
-  /// write contents of struct to file / stream / string
+  /// deserialize from json (string, stream, file, or bson)
   void from_json(nlohmann::ordered_json& js);
   void from_string(const std::string& str);
+  void from_string(const char* str);
+  void from_string(const char* str, size_t n);
   void from_stream(std::istream& is);
   void from_file(const std::string& fname);
   void from_bson(const std::vector<uint8_t>& bson);

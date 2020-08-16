@@ -33,7 +33,7 @@ namespace codepi{
 class ConfiguratorJson{
 public:
 
-    /// serialize to json
+    /// serialize to json (string, stream, file, or bson)
     nlohmann::ordered_json to_json() const{
         nlohmann::ordered_json js;
         cfgWriteToJson(js, *this);
@@ -56,27 +56,17 @@ public:
         return nlohmann::ordered_json::to_bson(to_json());
     }
 
-    /// deserialize from json
-    void from_json(const nlohmann::ordered_json& js){
-        cfgSetFromJson(js, *this);
-    }
-    void from_string(const std::string& str) {
-        nlohmann::ordered_json js = nlohmann::ordered_json::parse(str);
-        from_json(js);
-    }
-    void from_stream(std::istream& is) {
-        nlohmann::ordered_json j;
-        is >> j;
-        from_json(j);
-    }
+    /// deserialize from json (string, stream, file, or bson)
+    void from_json(const nlohmann::ordered_json& js) { cfgSetFromJson(js, *this); }
+    void from_string(const std::string& str)         { from_json(nlohmann::ordered_json::parse(str)); }
+    void from_string(const char* str)                { from_json(nlohmann::ordered_json::parse(str)); }
+    void from_string(const char* str, size_t n)      { from_json(nlohmann::ordered_json::parse(str, str+n)); }
+    void from_stream(std::istream& is)               { from_json(nlohmann::ordered_json::parse(is)); }
+    void from_bson(const std::vector<uint8_t>& bson) { from_json(nlohmann::ordered_json::from_bson(bson)); }
     void from_file(const std::string& fname) {
         std::ifstream ifs(fname);
         if(!ifs) throwError("ConfiguratorJson::from_file: file could not be opened: "+fname);
         from_stream(ifs);
-    }
-    void from_bson(const std::vector<uint8_t>& bson) {
-        nlohmann::ordered_json js = nlohmann::ordered_json::from_bson(bson);
-        from_json(js);
     }
 
     /// comparison
