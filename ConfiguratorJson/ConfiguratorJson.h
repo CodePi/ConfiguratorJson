@@ -55,6 +55,10 @@ public:
     std::vector<uint8_t> to_bson() const{
         return nlohmann::ordered_json::to_bson(to_json());
     }
+    friend std::ostream& operator<<(std::ostream& os, const ConfiguratorJson& cfg) {
+        os << cfg.to_json();
+        return os;
+    }
 
     /// deserialize from json (string, stream, file, or bson)
     void from_json(const nlohmann::ordered_json& js) { cfgSetFromJson(js, *this); }
@@ -67,6 +71,10 @@ public:
         std::ifstream ifs(fname);
         if(!ifs) throwError("ConfiguratorJson::from_file: file could not be opened: "+fname);
         from_stream(ifs);
+    }
+    friend std::istream& operator>>(std::istream& is, ConfiguratorJson& cfg) {
+        cfg.from_stream(is);
+        return is;
     }
 
     /// comparison

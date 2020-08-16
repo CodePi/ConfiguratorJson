@@ -83,7 +83,7 @@ int main() {
     // test serialization/deserialization
     TestConfig tc2;
     tc2.from_string(str);
-    cout << tc2.to_string() << "\n";
+    cout << tc2 << "\n";
     assert(tc==tc2);
 
     // sizes of serialization

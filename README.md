@@ -76,6 +76,7 @@ public:
   void to_stream(std::ostream& os, int indent=-1);
   void to_file(const std::string& fname, int indent=-1);
   std::vector<uint8_t> to_bson();
+  friend std::ostream& operator<<(std::ostream& os, const ConfiguratorJson& cfg);
 
   /// deserialize from json (string, stream, file, or bson)
   void from_json(nlohmann::ordered_json& js);
@@ -85,6 +86,7 @@ public:
   void from_stream(std::istream& is);
   void from_file(const std::string& fname);
   void from_bson(const std::vector<uint8_t>& bson);
+  friend std::istream& operator>>(std::istream& is, ConfiguratorJson& cfg);
 
   /// equality
   bool operator==(ConfiguratorJson& other);
