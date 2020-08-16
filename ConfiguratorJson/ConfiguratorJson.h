@@ -59,6 +59,9 @@ public:
         os << cfg.to_json();
         return os;
     }
+    friend void to_json(nlohmann::ordered_json& js, const ConfiguratorJson& cfg) {
+        cfgWriteToJson(js, cfg);
+    }
 
     /// deserialize from json (string, stream, file, or bson)
     void from_json(const nlohmann::ordered_json& js) { cfgSetFromJson(js, *this); }
@@ -75,6 +78,9 @@ public:
     friend std::istream& operator>>(std::istream& is, ConfiguratorJson& cfg) {
         cfg.from_stream(is);
         return is;
+    }
+    friend void from_json(const nlohmann::ordered_json& js, ConfiguratorJson& cfg) {
+        cfgSetFromJson(js, cfg);
     }
 
     /// comparison
@@ -128,56 +134,6 @@ protected:
         cfgSetFromJson(js, (T&)val);
     }
 
-    /// cfgSetFromJson for vector
-    template <typename T>
-    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::vector<T>& val) { cfgContainerSetFromJson(js, val); }
-
-    /// cfgSetFromJson for array
-    template <typename T, size_t N>
-    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::array<T, N>& val) { cfgContainerSetFromJson(js, val); }
-
-    /// cfgSetFromJson for set
-    template <typename T>
-    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::set<T>& val) { cfgContainerSetFromJson(js, val); }
-
-    /// cfgSetFromJson for maps with string as key
-    template <typename T2>
-    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::map<std::string, T2>& map) {
-        map.clear();
-        for(auto& kv : js.items()) {
-            T2 val;
-            cfgSetFromJson(kv.value(), val);
-            map[kv.key()] = std::move(val);
-        }
-    }
-
-    /// cfgSetFromJson for other maps
-    /// Note: json doesn't properly support map with non-string key.  So treat as array of pairs.
-    template <typename T1, typename T2>
-    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::map<T1, T2>& val) { cfgContainerSetFromJson(js, val); }
-
-    /// cfgSetFromJson for pair
-    template <typename T1, typename T2>
-    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::pair<T1, T2>& val) {
-        if(js.size()!=2) throw std::runtime_error("cfgSetFromJson: json pair must be size 2");
-        // Note: the remove_const is needed because map::value_type is pair<const T1, T2>
-        cfgSetFromJson(js.at(0), remove_const(val.first));
-        cfgSetFromJson(js.at(1), val.second);
-    }
-
-    /// cfgContainerSetFromJson helper function for other containers
-    template <typename Container>
-    static void cfgContainerSetFromJson(const nlohmann::ordered_json& js, Container& container) {
-        clear_helper(container);
-        int i=0;
-        for(nlohmann::ordered_json jval : js) {
-            typename Container::value_type val;
-            cfgSetFromJson(jval,val);
-            insert_helper(container, i, std::move(val));
-            i++;
-        }
-    }
-
     /// cfgSetFromJson for all other types
     /// the enable_if is required to prevent it from matching on ConfiguratorJson descendants
     template <typename T>
@@ -185,7 +141,6 @@ protected:
     cfgSetFromJson(const nlohmann::ordered_json& js, T& val){
         val = js.get<T>();
     }
-
     //////////////////////////////////////////////////////////////////
     // cfgWriteToJson(json, val)
     // Used internally by cfgMultiFunction
@@ -206,54 +161,6 @@ protected:
     static void cfgWriteToJson(nlohmann::ordered_json& js, const Optional<T>& val){
         if(!val.isSet()) throw std::runtime_error("cfgWriteToJson Optional<T>: this shouldn't happen");
         cfgWriteToJson(js, (const T&)val);
-    }
-
-    /// cfgWriteToJson for vector
-    template <typename T>
-    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::vector<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
-
-    /// cfgWriteToJson for array
-    template <typename T, size_t N>
-    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::array<T, N>& val) { cfgContainerWriteToJsonHelper(js, val); }
-
-    /// cfgWriteToJson for set
-    template <typename T>
-    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::set<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
-
-    /// cfgWriteToJson for map with string as key
-    template <typename T2>
-    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::map<std::string, T2>& val) {
-        for(auto& kv : val) {
-            nlohmann::ordered_json jval;
-            cfgWriteToJson(jval, kv.second);
-            js[kv.first] = std::move(jval);
-        }
-    }
-
-    /// cfgWriteToJson for other maps
-    /// Note: json doesn't properly support map with non-string key.  So treat as array of pairs.
-    template <typename T1, typename T2>
-    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::map<T1, T2>& val) { cfgContainerWriteToJsonHelper(js, val); }
-
-    /// cfgWriteToJson for pair
-    template <typename T1, typename T2>
-    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::pair<T1, T2>& val) {
-        nlohmann::ordered_json jfirst;
-        nlohmann::ordered_json jsecond;
-        cfgWriteToJson(jfirst, val.first);
-        cfgWriteToJson(jsecond, val.second);
-        js = {std::move(jfirst), std::move(jsecond)};
-    }
-
-    /// cfgContainerWriteToJsonHelper for other containers
-    template <typename Container>
-    static void cfgContainerWriteToJsonHelper(nlohmann::ordered_json& js, const Container& container) {
-        js = nlohmann::ordered_json::array();
-        for(auto& val : container) {
-            nlohmann::ordered_json j;
-            cfgWriteToJson(j, val);
-            js.push_back(std::move(j));
-        }
     }
 
     /// cfgWriteToJson for all other types
