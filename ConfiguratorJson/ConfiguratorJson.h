@@ -51,7 +51,7 @@ public:
     /// serialize to json (string, stream, file, or bson)
     nlohmann::ordered_json to_json() const{
         nlohmann::ordered_json js;
-        cfgWriteToJson(js, *this);
+        remove_const(*this).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &js);
         return js;
     }
     std::string to_string(int indent=-1) const{
@@ -75,11 +75,18 @@ public:
         return os;
     }
     friend void to_json(nlohmann::ordered_json& js, const ConfiguratorJson& cfg) {
-        cfgWriteToJson(js, cfg);
+        js = cfg.to_json();
     }
 
     /// deserialize from json (string, stream, file, or bson)
-    void from_json(const nlohmann::ordered_json& js) { cfgSetFromJson(js, *this); }
+    void from_json(const nlohmann::ordered_json& js) {
+        for(auto& kv : js.items()){
+            int num_matches = cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr);
+            if(num_matches==0 && !allow_keys_not_in_struct()) {
+                throwError("from_json error: \"" + kv.key() + "\" not a member of " + getStructName());
+            }
+        }
+    }
     void from_string(const std::string& str)         { from_json(nlohmann::ordered_json::parse(str)); }
     void from_string(const char* str)                { from_json(nlohmann::ordered_json::parse(str)); }
     void from_string(const char* str, size_t n)      { from_json(nlohmann::ordered_json::parse(str, str+n)); }
@@ -94,9 +101,7 @@ public:
         cfg.from_stream(is);
         return is;
     }
-    friend void from_json(const nlohmann::ordered_json& js, ConfiguratorJson& cfg) {
-        cfgSetFromJson(js, cfg);
-    }
+    friend void from_json(const nlohmann::ordered_json& js, ConfiguratorJson& cfg) { cfg.from_json(js); }
 
     /// comparison
     bool operator==(const ConfiguratorJson& other) const { return this->to_json()==other.to_json();}
@@ -125,37 +130,6 @@ protected:
     /// overridable method used to control whether json keys that don't match members are allowed
     /// Note: override also needs to be const
     virtual bool allow_keys_not_in_struct() const { return false; }
-
-    //////////////////////////////////////////////////////////////////
-    // cfgSetFromJson(json, val)
-    // Used internally by cfgMultiFunction
-    // Sets value of val based on contents of json
-    // Overloaded for multiple types: string, configurator descendants, bool,
-    //   pair, various STL containers, and primitives
-
-    /// cfgSetFromJson for descendants of ConfiguratorJson
-    static void cfgSetFromJson(const nlohmann::ordered_json& js, ConfiguratorJson& cfg){
-        for(auto& kv : js.items()){
-            int num_matches = cfg.cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr);
-            if(num_matches==0 && !cfg.allow_keys_not_in_struct()) {
-                cfg.throwError("from_json error: \"" + kv.key() + "\" not a member of " + cfg.getStructName());
-            }
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////
-    // cfgWriteToJson(json, val)
-    // Used internally by cfgMultiFunction
-    // Writes the contents of val to the json
-    // Overloaded for multiple types: string, configurator descendants, bool,
-    //   pair, various STL containers, and primitives
-
-    /// cfgWriteToJson for descendants of ConfiguratorJson
-    static void cfgWriteToJson(nlohmann::ordered_json& js, const ConfiguratorJson& val){
-        // Note: the remove_const is needed because cfgMultiFunction is non-const,
-        //       but will not modify the object if mfType is CFGJS_WRITE_ALL
-        remove_const(val).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &js);
-    }
 
     /// returns true if optional type and value is set
     template<typename T>
