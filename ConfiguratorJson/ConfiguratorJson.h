@@ -34,8 +34,8 @@ class ConfiguratorJson{
 public:
 
     /// serialize to json
-    nlohmann::json to_json() const{
-        nlohmann::json js;
+    nlohmann::ordered_json to_json() const{
+        nlohmann::ordered_json js;
         cfgWriteToJson(js, *this);
         return js;
     }
@@ -53,19 +53,19 @@ public:
         to_stream(ofs, indent);
     }
     std::vector<uint8_t> to_bson() const{
-        return nlohmann::json::to_bson(to_json());
+        return nlohmann::ordered_json::to_bson(to_json());
     }
 
     /// deserialize from json
-    void from_json(const nlohmann::json& js){
+    void from_json(const nlohmann::ordered_json& js){
         cfgSetFromJson(js, *this);
     }
     void from_string(const std::string& str) {
-        nlohmann::json js = nlohmann::json::parse(str);
+        nlohmann::ordered_json js = nlohmann::ordered_json::parse(str);
         from_json(js);
     }
     void from_stream(std::istream& is) {
-        nlohmann::json j;
+        nlohmann::ordered_json j;
         is >> j;
         from_json(j);
     }
@@ -75,7 +75,7 @@ public:
         from_stream(ifs);
     }
     void from_bson(const std::vector<uint8_t>& bson) {
-        nlohmann::json js = nlohmann::json::from_bson(bson);
+        nlohmann::ordered_json js = nlohmann::ordered_json::from_bson(bson);
         from_json(js);
     }
 
@@ -97,7 +97,7 @@ protected:
     ///   This method is automatically generated in subclass using macros below
     ///   Returns the number of variables matched
     virtual int cfgMultiFunction(MFType mfType, const std::string* str,
-                                 const nlohmann::json* jsonIn, nlohmann::json* jsonOut)=0;
+                                 const nlohmann::ordered_json* jsonIn, nlohmann::ordered_json* jsonOut)=0;
 
     /// returns default value of type T
     template <typename T> static T cfgGetDefaultVal(const T&var){return T();}
@@ -115,7 +115,7 @@ protected:
     //   pair, various STL containers, and primitives
 
     /// cfgSetFromJson for descendants of ConfiguratorJson
-    static void cfgSetFromJson(const nlohmann::json& js, ConfiguratorJson& cfg){
+    static void cfgSetFromJson(const nlohmann::ordered_json& js, ConfiguratorJson& cfg){
         for(auto& kv : js.items()){
             int num_matches = cfg.cfgMultiFunction(CFGJS_SET, &kv.key(), &kv.value(), nullptr);
             if(num_matches==0 && !cfg.allow_keys_not_in_struct()) {
@@ -126,25 +126,25 @@ protected:
 
     /// cfgSetFromJson for Optional<T>
     template <typename T>
-    static void cfgSetFromJson(const nlohmann::json& js, Optional<T>& val){
+    static void cfgSetFromJson(const nlohmann::ordered_json& js, Optional<T>& val){
         cfgSetFromJson(js, (T&)val);
     }
 
     /// cfgSetFromJson for vector
     template <typename T>
-    static void cfgSetFromJson(const nlohmann::json& js, std::vector<T>& val) { cfgContainerSetFromJson(js, val); }
+    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::vector<T>& val) { cfgContainerSetFromJson(js, val); }
 
     /// cfgSetFromJson for array
     template <typename T, size_t N>
-    static void cfgSetFromJson(const nlohmann::json& js, std::array<T, N>& val) { cfgContainerSetFromJson(js, val); }
+    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::array<T, N>& val) { cfgContainerSetFromJson(js, val); }
 
     /// cfgSetFromJson for set
     template <typename T>
-    static void cfgSetFromJson(const nlohmann::json& js, std::set<T>& val) { cfgContainerSetFromJson(js, val); }
+    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::set<T>& val) { cfgContainerSetFromJson(js, val); }
 
     /// cfgSetFromJson for maps with string as key
     template <typename T2>
-    static void cfgSetFromJson(const nlohmann::json& js, std::map<std::string, T2>& map) {
+    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::map<std::string, T2>& map) {
         map.clear();
         for(auto& kv : js.items()) {
             T2 val;
@@ -156,11 +156,11 @@ protected:
     /// cfgSetFromJson for other maps
     /// Note: json doesn't properly support map with non-string key.  So treat as array of pairs.
     template <typename T1, typename T2>
-    static void cfgSetFromJson(const nlohmann::json& js, std::map<T1, T2>& val) { cfgContainerSetFromJson(js, val); }
+    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::map<T1, T2>& val) { cfgContainerSetFromJson(js, val); }
 
     /// cfgSetFromJson for pair
     template <typename T1, typename T2>
-    static void cfgSetFromJson(const nlohmann::json& js, std::pair<T1, T2>& val) {
+    static void cfgSetFromJson(const nlohmann::ordered_json& js, std::pair<T1, T2>& val) {
         if(js.size()!=2) throw std::runtime_error("cfgSetFromJson: json pair must be size 2");
         // Note: the remove_const is needed because map::value_type is pair<const T1, T2>
         cfgSetFromJson(js.at(0), remove_const(val.first));
@@ -169,10 +169,10 @@ protected:
 
     /// cfgContainerSetFromJson helper function for other containers
     template <typename Container>
-    static void cfgContainerSetFromJson(const nlohmann::json& js, Container& container) {
+    static void cfgContainerSetFromJson(const nlohmann::ordered_json& js, Container& container) {
         clear_helper(container);
         int i=0;
-        for(nlohmann::json jval : js) {
+        for(nlohmann::ordered_json jval : js) {
             typename Container::value_type val;
             cfgSetFromJson(jval,val);
             insert_helper(container, i, std::move(val));
@@ -184,7 +184,7 @@ protected:
     /// the enable_if is required to prevent it from matching on ConfiguratorJson descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgSetFromJson(const nlohmann::json& js, T& val){
+    cfgSetFromJson(const nlohmann::ordered_json& js, T& val){
         val = js.get<T>();
     }
 
@@ -196,7 +196,7 @@ protected:
     //   pair, various STL containers, and primitives
 
     /// cfgWriteToJson for descendants of ConfiguratorJson
-    static void cfgWriteToJson(nlohmann::json& js, const ConfiguratorJson& val){
+    static void cfgWriteToJson(nlohmann::ordered_json& js, const ConfiguratorJson& val){
         // Note: the remove_const is needed because cfgMultiFunction is non-const,
         //       but will not modify the object if mfType is CFGJS_WRITE_ALL
         remove_const(val).cfgMultiFunction(CFGJS_WRITE_ALL, nullptr, nullptr, &js);
@@ -205,28 +205,28 @@ protected:
     /// cfgWriteToJson for Optional<T>
     /// Prints contents of Optional.
     template <typename T>
-    static void cfgWriteToJson(nlohmann::json& js, const Optional<T>& val){
+    static void cfgWriteToJson(nlohmann::ordered_json& js, const Optional<T>& val){
         if(!val.isSet()) throw std::runtime_error("cfgWriteToJson Optional<T>: this shouldn't happen");
         cfgWriteToJson(js, (const T&)val);
     }
 
     /// cfgWriteToJson for vector
     template <typename T>
-    static void cfgWriteToJson(nlohmann::json& js, const std::vector<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::vector<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
     /// cfgWriteToJson for array
     template <typename T, size_t N>
-    static void cfgWriteToJson(nlohmann::json& js, const std::array<T, N>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::array<T, N>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
     /// cfgWriteToJson for set
     template <typename T>
-    static void cfgWriteToJson(nlohmann::json& js, const std::set<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::set<T>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
     /// cfgWriteToJson for map with string as key
     template <typename T2>
-    static void cfgWriteToJson(nlohmann::json& js, const std::map<std::string, T2>& val) {
+    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::map<std::string, T2>& val) {
         for(auto& kv : val) {
-            nlohmann::json jval;
+            nlohmann::ordered_json jval;
             cfgWriteToJson(jval, kv.second);
             js[kv.first] = std::move(jval);
         }
@@ -235,13 +235,13 @@ protected:
     /// cfgWriteToJson for other maps
     /// Note: json doesn't properly support map with non-string key.  So treat as array of pairs.
     template <typename T1, typename T2>
-    static void cfgWriteToJson(nlohmann::json& js, const std::map<T1, T2>& val) { cfgContainerWriteToJsonHelper(js, val); }
+    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::map<T1, T2>& val) { cfgContainerWriteToJsonHelper(js, val); }
 
     /// cfgWriteToJson for pair
     template <typename T1, typename T2>
-    static void cfgWriteToJson(nlohmann::json& js, const std::pair<T1, T2>& val) {
-        nlohmann::json jfirst;
-        nlohmann::json jsecond;
+    static void cfgWriteToJson(nlohmann::ordered_json& js, const std::pair<T1, T2>& val) {
+        nlohmann::ordered_json jfirst;
+        nlohmann::ordered_json jsecond;
         cfgWriteToJson(jfirst, val.first);
         cfgWriteToJson(jsecond, val.second);
         js = {std::move(jfirst), std::move(jsecond)};
@@ -249,10 +249,10 @@ protected:
 
     /// cfgContainerWriteToJsonHelper for other containers
     template <typename Container>
-    static void cfgContainerWriteToJsonHelper(nlohmann::json& js, const Container& container) {
-        js = nlohmann::json::array();
+    static void cfgContainerWriteToJsonHelper(nlohmann::ordered_json& js, const Container& container) {
+        js = nlohmann::ordered_json::array();
         for(auto& val : container) {
-            nlohmann::json j;
+            nlohmann::ordered_json j;
             cfgWriteToJson(j, val);
             js.push_back(std::move(j));
         }
@@ -262,7 +262,7 @@ protected:
     /// the enable_if is required to prevent it from matching on ConfiguratorJson descendants
     template <typename T>
     static typename std::enable_if<!std::is_base_of<ConfiguratorJson,T>::value,void>::type
-    cfgWriteToJson(nlohmann::json& js, const T& val){
+    cfgWriteToJson(nlohmann::ordered_json& js, const T& val){
         js = val;
     }
 
@@ -328,7 +328,7 @@ protected:
 #define CFGJS_HEADER_NO_CTOR(structName) \
   std::string getStructName() const { return #structName; } \
   int cfgMultiFunction(MFType mfType, const std::string* str, \
-    const nlohmann::json* jsonIn, nlohmann::json* jsonOut){ \
+    const nlohmann::ordered_json* jsonIn, nlohmann::ordered_json* jsonOut){ \
     int retVal=0;
 
 // continues cfgMultiFunction method, called for each member variable in struct 
@@ -338,7 +338,7 @@ protected:
     } else if(mfType==CFGJS_SET && #varName==*str) { cfgSetFromJson(*jsonIn,varName);retVal++;} \
   else if(mfType==CFGJS_WRITE_ALL) { \
     if(cfgIsSetOrNotOptional(varName)) { \
-      nlohmann::json jsonTmp;                    \
+      nlohmann::ordered_json jsonTmp;                    \
       cfgWriteToJson(jsonTmp,varName);    \
       (*jsonOut)[#varName] = std::move(jsonTmp); retVal++; \
     } \
