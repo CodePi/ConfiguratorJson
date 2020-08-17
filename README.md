@@ -91,7 +91,7 @@ public:
   /// equality
   bool operator==(ConfiguratorJson& other);
   bool operator!=(ConfiguratorJson& other);
-  bool operator<(ConfiguratorJson& other);
+  bool operator< (ConfiguratorJson& other);
 };
 ```
 #### Supported types
