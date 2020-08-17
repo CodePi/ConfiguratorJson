@@ -133,15 +133,13 @@ protected:
 // from_json for Optional class
 template <typename T>
 void from_json(const nlohmann::ordered_json& js, Optional<T>& val) {
-    using nlohmann::from_json;
     if(js.empty()) val.unset();
-    else from_json(js, (T&)val);
+    else js.get_to(val.get());
 }
 
 // to_json for Optional class
 template <typename T>
 void to_json(nlohmann::ordered_json& js, const Optional<T>& val) {
-    using nlohmann::to_json;
     if(val.isSet()) js = val.get();
     else js={};
 }
@@ -160,8 +158,6 @@ void to_json(nlohmann::ordered_json& js, const Optional<T>& val) {
   std::string getStructName() const { return #structName; }                 \
   int cfgMultiFunction(MFType mfType, const std::string* str,               \
     const nlohmann::ordered_json* jsonIn, nlohmann::ordered_json* jsonOut){ \
-      using nlohmann::to_json;                                              \
-      using nlohmann::from_json;                                            \
       int retVal=0;
 
 // continues cfgMultiFunction method, called for each member variable in struct 
