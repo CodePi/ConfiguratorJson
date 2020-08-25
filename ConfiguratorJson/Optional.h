@@ -35,87 +35,86 @@ namespace codepi {
 
 template <typename T>
 class Optional{
-  public:
-    // object starts empty
-    Optional(): mpVal(NULL){}
+public:
+  // object starts empty
+  Optional() = default;
 
-    // makes a copy of rhs.
-    template <typename U>
-    Optional(U&& rhs){
-        mpVal = NULL;
-        *this = std::forward<U>(rhs); // call assignment operator
+  // makes a copy of rhs.
+  template <typename U>
+  Optional(U&& rhs){
+    *this = std::forward<U>(rhs); // call assignment operator
+  }
+
+  // deallocates if necessary
+  ~Optional() { unset(); }
+
+  // returns true if allocated
+  bool isSet() const { return mpVal!=nullptr; }
+
+  // sets to empty
+  void unset(){
+    delete mpVal;
+    mpVal = nullptr;
+  }
+
+  // returns reference.  Allocates if necessary.
+  T& get(){
+    if(!mpVal) mpVal = new T;
+    return *mpVal;
+  }
+
+  // returns const reference.  Throws if empty.
+  const T& get() const {
+    if(mpVal == nullptr) throw std::runtime_error("taking ref of empty const Optional");
+    return *mpVal;
+  }
+
+  // returns reference.  Allocates if necessary.
+  operator T&(){
+    return get();
+  }
+
+  // returns const reference.  Throws if empty.
+  operator const T&() const {
+    return get();
+  }
+
+  // assigns value.  Allocates if necessary
+  Optional<T>& operator=(const T& rhs){
+    if(mpVal!=&rhs) get() = rhs;
+    return *this;
+  }
+
+  // copies value.  Allocates if necessary
+  Optional<T>& operator=(const Optional<T>& rhs){
+    if(this == &rhs) ;             // if self assignment, do nothing
+    else if(!rhs.isSet()) unset(); // if rhs empty, empty lhs
+    else *this = *rhs.mpVal;       // else copy contents (call T assignment operator)
+    return *this;
+  }
+
+  // assigns value.  Allocates if necessary
+  Optional<T>& operator=(T&& rhs){
+    if(mpVal!=&rhs) get() = std::move(rhs);
+    return *this;
+  }
+
+  // moves value.
+  Optional<T>& operator=(Optional<T>&& rhs){
+    if(this != &rhs) {       // if self assignment, do nothing
+      unset();               // unset current value
+      mpVal = rhs.mpVal;     // move from rhs to lhs
+      rhs.mpVal = nullptr;      // clear rhs
     }
+    return *this;
+  }
 
-    // deallocates if necessary
-    ~Optional() { unset(); }
+  // allows access to instance methods and variables if payload is struct/class
+  T* operator->() { return &get(); }
+  const T* operator->() const { return &get(); }
 
-    // returns true if allocated
-    bool isSet() const { return mpVal!=NULL; }
-
-    // sets to empty
-    void unset(){
-        delete mpVal;
-        mpVal = NULL;
-    }
-
-    // returns reference.  Allocates if necessary.
-    T& get(){
-        if(!mpVal) mpVal = new T;
-        return *mpVal;
-    }
-
-    // returns const reference.  Throws if empty.
-    const T& get() const {
-        if(mpVal == nullptr) throw std::runtime_error("taking ref of empty const Optional");
-        return *mpVal;
-    }
-
-    // returns reference.  Allocates if necessary.
-    operator T&(){
-        return get();
-    }
-
-    // returns const reference.  Throws if empty.
-    operator const T&() const {
-        return get();
-    }
-
-    // assigns value.  Allocates if necessary
-    Optional<T>& operator=(const T& rhs){
-        if(mpVal!=&rhs) get() = rhs;
-        return *this;
-    }
-
-    // copies value.  Allocates if necessary
-    Optional<T>& operator=(const Optional<T>& rhs){
-        if(this == &rhs) ;             // if self assignment, do nothing
-        else if(!rhs.isSet()) unset(); // if rhs empty, empty lhs
-        else *this = *rhs.mpVal;       // else copy contents (call T assignment operator)
-        return *this;
-    }
-
-    // assigns value.  Allocates if necessary
-    Optional<T>& operator=(T&& rhs){
-        if(mpVal!=&rhs) get() = std::move(rhs);
-        return *this;
-    }
-
-    // moves value.
-    Optional<T>& operator=(Optional<T>&& rhs){
-        if(this != &rhs) {       // if self assignment, do nothing
-            unset();               // unset current value
-            mpVal = rhs.mpVal;     // move from rhs to lhs
-            rhs.mpVal = NULL;      // clear rhs
-        }
-        return *this;
-    }
-
-    // allows access to instance methods and variables if payload is struct/class
-    T* operator->() { return &get(); }
-    const T* operator->() const { return &get(); }
-
-  private:
-    T* mpVal;   // payload
+private:
+  T* mpVal = nullptr;   // payload
 };
 
 } // end namespace codepi
