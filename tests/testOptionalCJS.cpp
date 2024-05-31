@@ -26,7 +26,7 @@ int main(){
   // test1
   vector<int> v={1,2,3};
   int* orig = v.data();
-  Optional<vector<int>> ov(move(v));
+  Optional<vector<int>> ov(std::move(v));
   int* curr = ov->data();
   printf("construct by move contents:\t%p\t%p\t%s\n", orig, curr, pf(orig==curr));
 
